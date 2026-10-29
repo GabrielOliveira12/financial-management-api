@@ -1,0 +1,9 @@
+# Root-level ignores
+.env
+
+### IDE ###
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
