@@ -4,8 +4,11 @@ import com.gabroliv.financemanagement.application.command.CreateUserCommand;
 import com.gabroliv.financemanagement.application.command.UpdateUserCommand;
 import com.gabroliv.financemanagement.application.port.in.UserUseCase;
 import com.gabroliv.financemanagement.application.port.out.UserRepositoryPort;
+import com.gabroliv.financemanagement.application.service.exception.UserAlreadyExistsException;
+import com.gabroliv.financemanagement.application.service.exception.UserNotFoundException;
 import com.gabroliv.financemanagement.domain.model.User;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 
@@ -13,21 +16,24 @@ import java.util.List;
 public class UserService implements UserUseCase {
 
     private final UserRepositoryPort userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepositoryPort userRepository) {
+    public UserService(UserRepositoryPort userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public User create(CreateUserCommand command) {
         validateEmailAndUsername(command.email(), command.username(), null);
 
+        String passwordEncoded = passwordEncoder.encode(command.password());
         User user = new User(
                 null,
                 command.name(),
                 command.email(),
                 command.username(),
-                command.password()
+                passwordEncoded
         );
 
         return userRepository.save(user);
@@ -49,12 +55,12 @@ public class UserService implements UserUseCase {
         User user = findById(id);
 
         validateEmailAndUsername(command.email(), command.username(), user);
-
+        String passwordEncoded = passwordEncoder.encode(command.password());
         user.update(
                 command.name(),
                 command.email(),
                 command.username(),
-                command.password()
+                passwordEncoded
         );
 
         return userRepository.save(user);

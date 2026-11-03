@@ -1,4 +1,4 @@
-package com.gabroliv.financemanagement.application.service;
+package com.gabroliv.financemanagement.application.service.exception;
 
 public class UserNotFoundException extends RuntimeException {
 

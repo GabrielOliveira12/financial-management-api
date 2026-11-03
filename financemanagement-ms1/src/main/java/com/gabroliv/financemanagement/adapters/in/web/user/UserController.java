@@ -1,5 +1,7 @@
 package com.gabroliv.financemanagement.adapters.in.web.user;
 
+import com.gabroliv.financemanagement.adapters.in.web.user.dto.UserRequest;
+import com.gabroliv.financemanagement.adapters.in.web.user.dto.UserResponse;
 import com.gabroliv.financemanagement.application.command.CreateUserCommand;
 import com.gabroliv.financemanagement.application.command.UpdateUserCommand;
 import com.gabroliv.financemanagement.application.port.in.UserUseCase;

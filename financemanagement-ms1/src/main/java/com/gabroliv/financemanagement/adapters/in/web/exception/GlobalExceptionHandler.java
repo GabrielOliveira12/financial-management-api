@@ -1,7 +1,7 @@
 package com.gabroliv.financemanagement.adapters.in.web.exception;
 
-import com.gabroliv.financemanagement.application.service.UserAlreadyExistsException;
-import com.gabroliv.financemanagement.application.service.UserNotFoundException;
+import com.gabroliv.financemanagement.application.service.exception.UserAlreadyExistsException;
+import com.gabroliv.financemanagement.application.service.exception.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;

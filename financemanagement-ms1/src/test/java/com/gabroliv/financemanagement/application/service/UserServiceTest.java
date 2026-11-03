@@ -3,6 +3,8 @@ package com.gabroliv.financemanagement.application.service;
 import com.gabroliv.financemanagement.application.command.CreateUserCommand;
 import com.gabroliv.financemanagement.application.command.UpdateUserCommand;
 import com.gabroliv.financemanagement.application.port.out.UserRepositoryPort;
+import com.gabroliv.financemanagement.application.service.exception.UserAlreadyExistsException;
+import com.gabroliv.financemanagement.application.service.exception.UserNotFoundException;
 import com.gabroliv.financemanagement.domain.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,18 +22,23 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
     @Mock
     private UserRepositoryPort userRepository;
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
 
     private UserService userService;
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepository);
+        userService = new UserService(userRepository, passwordEncoder);
     }
 
     @Test
@@ -43,6 +50,9 @@ class UserServiceTest {
                 "testpassord"
         );
 
+        String hashedPassword = "$2a$10$hashedPasswordExample";
+
+        when(passwordEncoder.encode(command.password())).thenReturn(hashedPassword);
         when(userRepository.existsByEmail(command.email())).thenReturn(false);
         when(userRepository.existsByUsername(command.username())).thenReturn(false);
 
@@ -59,6 +69,10 @@ class UserServiceTest {
         });
 
         User createdUser = userService.create(command);
+
+        assertEquals(hashedPassword, createdUser.getPassword());
+        verify(passwordEncoder).encode("testpassord");
+
 
         assertNotNull(createdUser);
         assertEquals(1L, createdUser.getId());
@@ -174,6 +188,10 @@ class UserServiceTest {
                 "testuser",
                 "newtestpassord"
         );
+        String hashedPassword = "$2a$10$hashedNewPasswordExample";
+
+        when(passwordEncoder.encode(command.password()))
+                .thenReturn(hashedPassword);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -184,7 +202,8 @@ class UserServiceTest {
         assertEquals("Test Name Updated", updatedUser.getName());
         assertEquals("test@example.com", updatedUser.getEmail());
         assertEquals("testuser", updatedUser.getUsername());
-        assertEquals("newtestpassord", updatedUser.getPassword());
+        assertEquals(hashedPassword, updatedUser.getPassword());
+        verify(passwordEncoder).encode("newtestpassord");
 
         verify(userRepository).findById(1L);
         verify(userRepository).save(existingUser);
