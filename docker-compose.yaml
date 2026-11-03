@@ -1,41 +1,102 @@
 services:
-  postgres:
+  postgres-ms1:
     image: postgres:16-alpine
-    container_name: finance-postgres
+    container_name: finance-postgres-ms1
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${MS1_POSTGRES_DB}
+      POSTGRES_USER: ${MS1_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${MS1_POSTGRES_PASSWORD}
+
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${MS1_POSTGRES_PORT}:5432"
+
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_ms1_data:/var/lib/postgresql/data
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${MS1_POSTGRES_USER} -d ${MS1_POSTGRES_DB}"
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  app:
+  ms1:
     build:
       context: ./financemanagement-ms1
       dockerfile: Dockerfile
-    container_name: finance-app
+
+    container_name: finance-ms1
     restart: unless-stopped
+
     ports:
-      - "${APP_PORT}:8080"
+      - "${MS1_APP_PORT}:8080"
+
     environment:
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_NAME: ${DB_NAME}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: postgres-ms1
+      DB_PORT: 5432
+      DB_NAME: ${MS1_POSTGRES_DB}
+      DB_USERNAME: ${MS1_POSTGRES_USER}
+      DB_PASSWORD: ${MS1_POSTGRES_PASSWORD}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+
     depends_on:
-      postgres:
+      postgres-ms1:
+        condition: service_healthy
+
+  postgres-ms2:
+    image: postgres:16-alpine
+    container_name: finance-postgres-ms2
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${MS2_POSTGRES_DB}
+      POSTGRES_USER: ${MS2_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${MS2_POSTGRES_PASSWORD}
+
+    ports:
+      - "${MS2_POSTGRES_PORT}:5432"
+
+    volumes:
+      - postgres_ms2_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${MS2_POSTGRES_USER} -d ${MS2_POSTGRES_DB}"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ms2:
+    build:
+      context: ./financemanagement-ms2
+      dockerfile: Dockerfile
+
+    container_name: finance-ms2
+    restart: unless-stopped
+
+    ports:
+      - "${MS2_APP_PORT}:8080"
+
+    environment:
+      DB_HOST: postgres-ms2
+      DB_PORT: 5432
+      DB_NAME: ${MS2_POSTGRES_DB}
+      DB_USERNAME: ${MS2_POSTGRES_USER}
+      DB_PASSWORD: ${MS2_POSTGRES_PASSWORD}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+
+    depends_on:
+      postgres-ms2:
         condition: service_healthy
 
 volumes:
-  postgres_data:
+  postgres_ms1_data:
+  postgres_ms2_data:

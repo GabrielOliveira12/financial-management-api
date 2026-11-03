@@ -1,4 +1,4 @@
-package com.gabroliv.financemanagement.ms2;
+package com.gabroliv.financemanagement;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
