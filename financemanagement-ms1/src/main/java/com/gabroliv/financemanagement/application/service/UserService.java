@@ -7,6 +7,7 @@ import com.gabroliv.financemanagement.application.port.out.UserRepositoryPort;
 import com.gabroliv.financemanagement.application.service.exception.UserAlreadyExistsException;
 import com.gabroliv.financemanagement.application.service.exception.UserNotFoundException;
 import com.gabroliv.financemanagement.domain.model.User;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -37,6 +38,14 @@ public class UserService implements UserUseCase {
         );
 
         return userRepository.save(user);
+    }
+
+    @Transactional
+    @Override
+    public List<User> createUsers(List<CreateUserCommand> commands) {
+        return commands.stream()
+                .map(this::create)
+                .toList();
     }
 
     @Override

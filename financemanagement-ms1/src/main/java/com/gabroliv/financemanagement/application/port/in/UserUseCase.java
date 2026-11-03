@@ -10,6 +10,8 @@ public interface UserUseCase {
 
     User create(CreateUserCommand command);
 
+    List<User> createUsers(List<CreateUserCommand> commands);
+
     List<User> findAll();
 
     User findById(Long id);
