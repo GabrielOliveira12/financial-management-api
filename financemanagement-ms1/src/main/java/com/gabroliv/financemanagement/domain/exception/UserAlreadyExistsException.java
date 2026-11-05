@@ -1,4 +1,4 @@
-package com.gabroliv.financemanagement.application.service.exception;
+package com.gabroliv.financemanagement.domain.exception;
 
 public class UserAlreadyExistsException extends RuntimeException {
 

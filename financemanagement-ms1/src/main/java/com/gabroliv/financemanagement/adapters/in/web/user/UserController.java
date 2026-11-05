@@ -1,11 +1,14 @@
 package com.gabroliv.financemanagement.adapters.in.web.user;
 
+import com.gabroliv.financemanagement.adapters.in.web.user.dto.UpdateUserRequest;
 import com.gabroliv.financemanagement.adapters.in.web.user.dto.UserRequest;
 import com.gabroliv.financemanagement.adapters.in.web.user.dto.UserResponse;
 import com.gabroliv.financemanagement.application.command.CreateUserCommand;
 import com.gabroliv.financemanagement.application.command.UpdateUserCommand;
 import com.gabroliv.financemanagement.application.port.in.UserUseCase;
 import com.gabroliv.financemanagement.domain.model.User;
+import com.gabroliv.financemanagement.adapters.in.security.AuthenticatedUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,11 +64,10 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> update(
-            @PathVariable Long id,
-            @Valid @RequestBody UserRequest request
-    ) {
+    public ResponseEntity<UserResponse> update(@AuthenticationPrincipal AuthenticatedUserDetails authenticatedUser,
+                                               @PathVariable Long id, @Valid @RequestBody UpdateUserRequest request) {
         User user = userUseCase.update(
+                authenticatedUser.getId(),
                 id,
                 new UpdateUserCommand(
                         request.name(),
@@ -79,9 +81,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
-        userUseCase.deleteById(id);
-
+    public ResponseEntity<Void> deleteById(@AuthenticationPrincipal AuthenticatedUserDetails authenticatedUser, @PathVariable Long id) {
+        userUseCase.deleteById(authenticatedUser.getId(), id);
         return ResponseEntity.noContent().build();
     }
 

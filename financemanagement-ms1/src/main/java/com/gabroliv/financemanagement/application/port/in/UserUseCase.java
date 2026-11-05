@@ -16,7 +16,7 @@ public interface UserUseCase {
 
     User findById(Long id);
 
-    User update(Long id, UpdateUserCommand command);
+    User update(Long authenticatedUserId, Long id, UpdateUserCommand command);
 
-    void deleteById(Long id);
+    void deleteById(Long authenticatedUserId, Long id);
 }
