@@ -49,8 +49,8 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> findAll() {
-        List<UserResponse> users = userUseCase.findAll()
+    public ResponseEntity<List<UserResponse>> findAll(@AuthenticationPrincipal AuthenticatedUserDetails authenticatedUser) {
+        List<UserResponse> users = userUseCase.findAll(authenticatedUser.getId())
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -59,8 +59,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(toResponse(userUseCase.findById(id)));
+    public ResponseEntity<UserResponse> findById(@AuthenticationPrincipal AuthenticatedUserDetails authenticatedUser, @PathVariable Long id) {
+        return ResponseEntity.ok(toResponse(userUseCase.findById(authenticatedUser.getId(), id)));
     }
 
     @PutMapping("/{id}")
