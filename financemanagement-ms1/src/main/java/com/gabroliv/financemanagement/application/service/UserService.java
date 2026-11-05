@@ -31,7 +31,7 @@ public class UserService implements UserUseCase {
     public User create(CreateUserCommand command) {
 
         String normalizedEmail = normalizeEmail(command.email());
-        validateEmailAndUsername(command.email(), command.username(), null);
+        validateEmailAndUsername(normalizedEmail, command.username(), null);
 
         String passwordEncoded = passwordEncoder.hash(command.password());
         User user = new User(
@@ -54,21 +54,22 @@ public class UserService implements UserUseCase {
     }
 
     @Override
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<User> findAll(Long authenticatedUserId) {
+        return List.of(findUserById(authenticatedUserId));
     }
 
     @Override
-    public User findById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+    public User findById(Long authenticatedUserId, Long id) {
+        validateUserAccess(authenticatedUserId, id);
+
+        return findUserById(id);
     }
 
     @Override
     public User update(Long authenticatedUserId, Long id, UpdateUserCommand command) {
         validateUserAccess(authenticatedUserId, id);
 
-        User user = findById(id);
+        User user = findUserById(id);
 
         String normalizedEmail = normalizeEmail(command.email());
 
@@ -88,7 +89,7 @@ public class UserService implements UserUseCase {
     public void deleteById(Long authenticatedUserId, Long id) {
         validateUserAccess(authenticatedUserId, id);
 
-        User user = findById(id);
+        User user = findUserById(id);
         userRepository.deleteById(user.getId());
     }
 
@@ -117,4 +118,8 @@ public class UserService implements UserUseCase {
         }
     }
 
+    private User findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+    }
 }
