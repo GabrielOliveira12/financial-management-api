@@ -133,7 +133,7 @@ class UserServiceTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        User foundUser = userService.findById(1L);
+        User foundUser = userService.findById(1L, 1L);
 
         assertEquals(1L, foundUser.getId());
         assertEquals("Test Name", foundUser.getName());
@@ -147,7 +147,7 @@ class UserServiceTest {
 
         assertThrows(
                 UserNotFoundException.class,
-                () -> userService.findById(99L)
+                () -> userService.findById(99L, 99L)
         );
 
         verify(userRepository).findById(99L);
@@ -168,7 +168,7 @@ class UserServiceTest {
 
         when(userRepository.findAll()).thenReturn(users);
 
-        List<User> foundUsers = userService.findAll();
+        List<User> foundUsers = userService.findAll(1L);
 
         assertEquals(2, foundUsers.size());
         assertEquals("Test Name", foundUsers.get(0).getName());
