@@ -4,9 +4,12 @@ import com.gabroliv.financemanagement.application.command.CreateUserCommand;
 import com.gabroliv.financemanagement.application.command.UpdateUserCommand;
 import com.gabroliv.financemanagement.application.port.out.PasswordHashPort;
 import com.gabroliv.financemanagement.application.port.out.UserRepositoryPort;
+import com.gabroliv.financemanagement.domain.exception.UserAccessDeniedException;
 import com.gabroliv.financemanagement.domain.exception.UserAlreadyExistsException;
 import com.gabroliv.financemanagement.domain.exception.UserNotFoundException;
 import com.gabroliv.financemanagement.domain.model.User;
+import com.gabroliv.financemanagement.domain.exception.UserAccessDeniedException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +26,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
+
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -106,6 +111,28 @@ class UserServiceTest {
     }
 
     @Test
+    void shouldNotCreateUserWhenNormalizedEmailAlreadyExists() {
+        CreateUserCommand command = new CreateUserCommand(
+                "Test Name",
+                "TEST@EXAMPLE.COM",
+                "testuser",
+                "testpassord"
+        );
+
+        when(userRepository.existsByEmail("test@example.com")).thenReturn(true);
+
+        assertThrows(
+                UserAlreadyExistsException.class,
+                () -> userService.create(command)
+        );
+
+        verify(userRepository).existsByEmail("test@example.com");
+        verify(userRepository, never()).existsByUsername(any());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+
+    @Test
     void shouldNotCreateUserWhenUsernameAlreadyExists() {
         CreateUserCommand command = new CreateUserCommand(
                 "Test Name",
@@ -154,28 +181,37 @@ class UserServiceTest {
     }
 
     @Test
-    void shouldReturnAllUsers() {
-        List<User> users = List.of(
-                createUser(1L),
-                new User(
-                        2L,
-                        "Ana Silva",
-                        "ana@example.com",
-                        "ana",
-                        "password456"
-                )
+    void shouldThrowAccessDeniedWhenFindingAnotherUser() {
+        Long authenticatedUserId = 1L;
+        Long requestedUserId = 2L;
+
+        assertThrows(
+                UserAccessDeniedException.class,
+                () -> userService.findById(authenticatedUserId, requestedUserId)
         );
 
-        when(userRepository.findAll()).thenReturn(users);
-
-        List<User> foundUsers = userService.findAll(1L);
-
-        assertEquals(2, foundUsers.size());
-        assertEquals("Test Name", foundUsers.get(0).getName());
-        assertEquals("Ana Silva", foundUsers.get(1).getName());
-
-        verify(userRepository).findAll();
+        verifyNoInteractions(userRepository);
     }
+
+
+    @Test
+    void shouldReturnOnlyAuthenticatedUser() {
+        Long authenticatedUserId = 1L;
+        User authenticatedUser = createUser(authenticatedUserId);
+
+        when(userRepository.findById(authenticatedUserId))
+                .thenReturn(Optional.of(authenticatedUser));
+
+        List<User> foundUsers = userService.findAll(authenticatedUserId);
+
+        assertEquals(1, foundUsers.size());
+        assertEquals(authenticatedUserId, foundUsers.get(0).getId());
+        assertEquals("Test Name", foundUsers.get(0).getName());
+
+        verify(userRepository).findById(authenticatedUserId);
+        verify(userRepository, never()).findAll();
+    }
+
 
     @Test
     void shouldUpdateUserWhenUserExists() {
