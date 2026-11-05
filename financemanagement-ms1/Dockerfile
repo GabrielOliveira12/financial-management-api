@@ -17,7 +17,12 @@ FROM eclipse-temurin:25-jre
 
 WORKDIR /app
 
-COPY --from=build /app/target/*.jar app.jar
+RUN groupadd --system spring \
+    && useradd --system --gid spring --no-create-home spring
+
+COPY --from=build --chown=spring:spring /app/target/*.jar app.jar
+
+USER spring
 
 EXPOSE 8080
 
