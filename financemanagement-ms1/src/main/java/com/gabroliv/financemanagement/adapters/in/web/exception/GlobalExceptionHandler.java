@@ -1,16 +1,19 @@
 package com.gabroliv.financemanagement.adapters.in.web.exception;
 
-import com.gabroliv.financemanagement.application.service.exception.UserAlreadyExistsException;
-import com.gabroliv.financemanagement.application.service.exception.UserNotFoundException;
+import com.gabroliv.financemanagement.domain.exception.UserAlreadyExistsException;
+import com.gabroliv.financemanagement.domain.exception.UserNotFoundException;
 import com.gabroliv.financemanagement.adapters.in.web.user.exception.CsvImportException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.gabroliv.financemanagement.domain.exception.UserAccessDeniedException;
+
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -67,6 +70,18 @@ public class GlobalExceptionHandler {
         ApiError apiError = new ApiError(Instant.now(), HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase(), exception.getMessage(), request.getRequestURI(), exception.getFieldErrors());
 
         return ResponseEntity.badRequest().body(apiError);
+    }
+
+    @ExceptionHandler(UserAccessDeniedException.class)
+    public ProblemDetail handleUserAccessDenied(UserAccessDeniedException exception) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.FORBIDDEN,
+                exception.getMessage()
+        );
+
+        problemDetail.setTitle("Access denied");
+
+        return problemDetail;
     }
 
 }

@@ -2,9 +2,10 @@ package com.gabroliv.financemanagement.application.service;
 
 import com.gabroliv.financemanagement.application.command.CreateUserCommand;
 import com.gabroliv.financemanagement.application.command.UpdateUserCommand;
+import com.gabroliv.financemanagement.application.port.out.PasswordHashPort;
 import com.gabroliv.financemanagement.application.port.out.UserRepositoryPort;
-import com.gabroliv.financemanagement.application.service.exception.UserAlreadyExistsException;
-import com.gabroliv.financemanagement.application.service.exception.UserNotFoundException;
+import com.gabroliv.financemanagement.domain.exception.UserAlreadyExistsException;
+import com.gabroliv.financemanagement.domain.exception.UserNotFoundException;
 import com.gabroliv.financemanagement.domain.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,8 +23,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -31,7 +30,7 @@ class UserServiceTest {
     @Mock
     private UserRepositoryPort userRepository;
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private PasswordHashPort passwordEncoder;
 
 
     private UserService userService;
@@ -52,7 +51,7 @@ class UserServiceTest {
 
         String hashedPassword = "$2a$10$hashedPasswordExample";
 
-        when(passwordEncoder.encode(command.password())).thenReturn(hashedPassword);
+        when(passwordEncoder.hash(command.password())).thenReturn(hashedPassword);
         when(userRepository.existsByEmail(command.email())).thenReturn(false);
         when(userRepository.existsByUsername(command.username())).thenReturn(false);
 
@@ -71,7 +70,7 @@ class UserServiceTest {
         User createdUser = userService.create(command);
 
         assertEquals(hashedPassword, createdUser.getPassword());
-        verify(passwordEncoder).encode("testpassord");
+        verify(passwordEncoder).hash("testpassord");
 
 
         assertNotNull(createdUser);
@@ -190,20 +189,20 @@ class UserServiceTest {
         );
         String hashedPassword = "$2a$10$hashedNewPasswordExample";
 
-        when(passwordEncoder.encode(command.password()))
+        when(passwordEncoder.hash(command.password()))
                 .thenReturn(hashedPassword);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User updatedUser = userService.update(1L, command);
+        User updatedUser = userService.update(1L,1L, command);
 
         assertEquals(1L, updatedUser.getId());
         assertEquals("Test Name Updated", updatedUser.getName());
         assertEquals("test@example.com", updatedUser.getEmail());
         assertEquals("testuser", updatedUser.getUsername());
         assertEquals(hashedPassword, updatedUser.getPassword());
-        verify(passwordEncoder).encode("newtestpassord");
+        verify(passwordEncoder).hash("newtestpassord");
 
         verify(userRepository).findById(1L);
         verify(userRepository).save(existingUser);
@@ -215,7 +214,7 @@ class UserServiceTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        userService.deleteById(1L);
+        userService.deleteById(1L, 1L);
 
         verify(userRepository).findById(1L);
         verify(userRepository).deleteById(1L);
@@ -227,7 +226,7 @@ class UserServiceTest {
 
         assertThrows(
                 UserNotFoundException.class,
-                () -> userService.deleteById(99L)
+                () -> userService.deleteById(99L, 99L)
         );
 
         verify(userRepository).findById(99L);

@@ -36,10 +36,13 @@ public class User {
         return password;
     }
 
-    public void update(String name, String email, String username, String password) {
+    public void update(String name, String email, String username) {
         this.name = name;
         this.email = email;
         this.username = username;
+    }
+
+    public void updatePassword(String password) {
         this.password = password;
     }
 }
