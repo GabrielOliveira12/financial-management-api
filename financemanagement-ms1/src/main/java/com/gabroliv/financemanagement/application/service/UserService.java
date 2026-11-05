@@ -31,7 +31,7 @@ public class UserService implements UserUseCase {
     public User create(CreateUserCommand command) {
 
         String normalizedEmail = normalizeEmail(command.email());
-        validateEmailAndUsername(command.email(), command.username(), null);
+        validateEmailAndUsername(normalizedEmail, command.username(), null);
 
         String passwordEncoded = passwordEncoder.hash(command.password());
         User user = new User(
