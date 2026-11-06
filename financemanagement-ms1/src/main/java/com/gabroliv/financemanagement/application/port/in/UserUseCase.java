@@ -12,9 +12,9 @@ public interface UserUseCase {
 
     List<User> createUsers(List<CreateUserCommand> commands);
 
-    List<User> findAll();
+    List<User> findAll(Long authenticatedUserId);
 
-    User findById(Long id);
+    User findById(Long authenticatedUserId, Long id);
 
     User update(Long authenticatedUserId, Long id, UpdateUserCommand command);
 
