@@ -1,4 +1,4 @@
-package com.gabroliv.financemanagement.ms2;
+package com.gabroliv.financemanagement;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
