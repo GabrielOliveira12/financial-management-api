@@ -8,8 +8,6 @@ import com.gabroliv.financemanagement.domain.exception.UserAccessDeniedException
 import com.gabroliv.financemanagement.domain.exception.UserAlreadyExistsException;
 import com.gabroliv.financemanagement.domain.exception.UserNotFoundException;
 import com.gabroliv.financemanagement.domain.model.User;
-import com.gabroliv.financemanagement.domain.exception.UserAccessDeniedException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,18 +23,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verifyNoInteractions;
-
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
     @Mock
     private UserRepositoryPort userRepository;
+
     @Mock
     private PasswordHashPort passwordEncoder;
-
 
     private UserService userService;
 
@@ -74,16 +71,14 @@ class UserServiceTest {
 
         User createdUser = userService.create(command);
 
-        assertEquals(hashedPassword, createdUser.getPassword());
-        verify(passwordEncoder).hash("testpassord");
-
-
         assertNotNull(createdUser);
         assertEquals(1L, createdUser.getId());
         assertEquals("Test Name", createdUser.getName());
         assertEquals("test@example.com", createdUser.getEmail());
         assertEquals("testuser", createdUser.getUsername());
+        assertEquals(hashedPassword, createdUser.getPassword());
 
+        verify(passwordEncoder).hash("testpassord");
         verify(userRepository).existsByEmail("test@example.com");
         verify(userRepository).existsByUsername("testuser");
         verify(userRepository).save(any(User.class));
@@ -130,7 +125,6 @@ class UserServiceTest {
         verify(userRepository, never()).existsByUsername(any());
         verify(userRepository, never()).save(any(User.class));
     }
-
 
     @Test
     void shouldNotCreateUserWhenUsernameAlreadyExists() {
@@ -193,7 +187,6 @@ class UserServiceTest {
         verifyNoInteractions(userRepository);
     }
 
-
     @Test
     void shouldReturnOnlyAuthenticatedUser() {
         Long authenticatedUserId = 1L;
@@ -212,7 +205,6 @@ class UserServiceTest {
         verify(userRepository, never()).findAll();
     }
 
-
     @Test
     void shouldUpdateUserWhenUserExists() {
         User existingUser = createUser(1L);
@@ -229,19 +221,61 @@ class UserServiceTest {
                 .thenReturn(hashedPassword);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        User updatedUser = userService.update(1L,1L, command);
+        User updatedUser = userService.update(1L, 1L, command);
 
         assertEquals(1L, updatedUser.getId());
         assertEquals("Test Name Updated", updatedUser.getName());
         assertEquals("test@example.com", updatedUser.getEmail());
         assertEquals("testuser", updatedUser.getUsername());
         assertEquals(hashedPassword, updatedUser.getPassword());
+
         verify(passwordEncoder).hash("newtestpassord");
+        verify(userRepository).findById(1L);
+        verify(userRepository).save(existingUser);
+    }
+
+    @Test
+    void shouldKeepCurrentPasswordWhenUpdatingUserWithNullPassword() {
+        User existingUser = createUser(1L);
+
+        UpdateUserCommand command = new UpdateUserCommand(
+                "Test Name Updated",
+                "test@example.com",
+                "testuser",
+                null
+        );
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        User updatedUser = userService.update(1L, 1L, command);
+
+        assertEquals("test password", updatedUser.getPassword());
 
         verify(userRepository).findById(1L);
         verify(userRepository).save(existingUser);
+        verify(passwordEncoder, never()).hash(any());
+    }
+
+    @Test
+    void shouldThrowAccessDeniedWhenUpdatingAnotherUser() {
+        UpdateUserCommand command = new UpdateUserCommand(
+                "Another Name",
+                "another@example.com",
+                "anotheruser",
+                null
+        );
+
+        assertThrows(
+                UserAccessDeniedException.class,
+                () -> userService.update(1L, 2L, command)
+        );
+
+        verifyNoInteractions(userRepository, passwordEncoder);
     }
 
     @Test
@@ -269,11 +303,21 @@ class UserServiceTest {
         verify(userRepository, never()).deleteById(any());
     }
 
+    @Test
+    void shouldThrowAccessDeniedWhenDeletingAnotherUser() {
+        assertThrows(
+                UserAccessDeniedException.class,
+                () -> userService.deleteById(1L, 2L)
+        );
+
+        verifyNoInteractions(userRepository);
+    }
+
     private User createUser(Long id) {
         return new User(
                 id,
                 "Test Name",
-                "Test@example.com",
+                "test@example.com",
                 "testuser",
                 "test password"
         );
