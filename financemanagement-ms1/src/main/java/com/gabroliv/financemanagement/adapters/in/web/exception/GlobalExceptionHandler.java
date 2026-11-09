@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -73,15 +72,20 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UserAccessDeniedException.class)
-    public ProblemDetail handleUserAccessDenied(UserAccessDeniedException exception) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-                HttpStatus.FORBIDDEN,
-                exception.getMessage()
+    public ResponseEntity<ApiError> handleUserAccessDenied(
+            UserAccessDeniedException exception,
+            HttpServletRequest request
+    ) {
+        ApiError apiError = new ApiError(
+                Instant.now(),
+                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
         );
 
-        problemDetail.setTitle("Access denied");
-
-        return problemDetail;
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiError);
     }
 
 }

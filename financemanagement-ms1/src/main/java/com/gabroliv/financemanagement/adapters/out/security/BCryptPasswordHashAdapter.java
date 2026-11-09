@@ -1,16 +1,16 @@
 package com.gabroliv.financemanagement.adapters.out.security;
 
 import com.gabroliv.financemanagement.application.port.out.PasswordHashPort;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BCryptPasswordHashAdapter implements PasswordHashPort {
 
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    public BCryptPasswordHashAdapter() {
-        this.passwordEncoder = new BCryptPasswordEncoder();
+    public BCryptPasswordHashAdapter(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
