@@ -17,14 +17,17 @@ public class Transaction {
     private RejectionReason rejectionReason;
     private final LocalDateTime createdAt;
 
-    public Transaction(Long id, Long userId, Long destinationUserId, TransactionType type, BigDecimal amount, LocalDateTime occurredAt,
-                       String description, TransactionCategory category, TransactionStatus status, RejectionReason rejectionReason,
-                       LocalDateTime createdAt) {
+    public Transaction(Long id, Long userId, Long destinationUserId, TransactionType type, BigDecimal amount,
+                       LocalDateTime occurredAt, String description, TransactionCategory category,
+                       TransactionStatus status, RejectionReason rejectionReason, LocalDateTime createdAt) {
 
+        validateUserId(userId);
         validateAmount(amount);
         validateType(type);
         validateCategory(type, category);
+        validateDestinationUser(userId, type, destinationUserId);
         validateStatus(status, rejectionReason);
+
 
         this.id = id;
         this.userId = userId;
@@ -70,6 +73,10 @@ public class Transaction {
     }
 
     private void validateCategory(TransactionType type, TransactionCategory category) {
+        if (type == TransactionType.PURCHASE && category == null) {
+            throw new IllegalArgumentException("Category is required for purchase transactions");
+        }
+
         if (type != TransactionType.PURCHASE && category != null) {
             throw new IllegalArgumentException("Category is only allowed for purchase transactions");
         }
@@ -84,6 +91,27 @@ public class Transaction {
             throw new IllegalArgumentException("Approved transactions cannot have a rejection reason");
         }
     }
+
+    private void validateUserId(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("Transaction user is required");
+        }
+    }
+
+    private void validateDestinationUser(Long userId, TransactionType type, Long destinationUserId) {
+        if (type == TransactionType.TRANSFER && destinationUserId == null) {
+            throw new IllegalArgumentException("Destination user is required for transfer transactions");
+        }
+
+        if (type == TransactionType.TRANSFER && userId.equals(destinationUserId)) {
+            throw new IllegalArgumentException("Destination user cannot be the same as the transaction user");
+        }
+
+        if (type != TransactionType.TRANSFER && destinationUserId != null) {
+            throw new IllegalArgumentException("Destination user is only allowed for transfer transactions");
+        }
+    }
+
 
     public Long getId() {
         return id;
