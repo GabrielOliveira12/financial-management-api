@@ -4,7 +4,7 @@ import com.gabroliv.financemanagement.adapters.in.web.user.dto.CsvImportResponse
 import com.gabroliv.financemanagement.adapters.in.web.user.dto.UserRequest;
 import com.gabroliv.financemanagement.adapters.in.web.user.exception.CsvImportException;
 import com.gabroliv.financemanagement.application.command.CreateUserCommand;
-import com.gabroliv.financemanagement.application.port.in.UserUseCase;
+import com.gabroliv.financemanagement.application.ports.in.UserUseCase;
 import com.gabroliv.financemanagement.domain.model.User;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;

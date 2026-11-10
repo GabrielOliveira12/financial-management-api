@@ -15,6 +15,13 @@ RUN ./mvnw clean package -DskipTests
 
 FROM eclipse-temurin:25-jre
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates ca-certificates-java \
+    && update-ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_TOOL_OPTIONS="-Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
+
 WORKDIR /app
 
 RUN groupadd --system spring \

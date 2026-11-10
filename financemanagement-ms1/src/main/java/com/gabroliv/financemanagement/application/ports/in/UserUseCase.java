@@ -1,4 +1,4 @@
-package com.gabroliv.financemanagement.application.port.in;
+package com.gabroliv.financemanagement.application.ports.in;
 
 import com.gabroliv.financemanagement.application.command.CreateUserCommand;
 import com.gabroliv.financemanagement.application.command.UpdateUserCommand;

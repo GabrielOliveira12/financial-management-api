@@ -1,6 +1,6 @@
 package com.gabroliv.financemanagement.adapters.out.security;
 
-import com.gabroliv.financemanagement.application.port.out.PasswordHashPort;
+import com.gabroliv.financemanagement.application.ports.out.PasswordHashPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 

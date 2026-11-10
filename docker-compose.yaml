@@ -95,6 +95,8 @@ services:
       DB_PASSWORD: ${MS2_POSTGRES_PASSWORD}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       MS1_URL: http://ms1:8080
+      JWT_SECRET: ${JWT_SECRET}
+      MOCK_API_ACCOUNTS_URL: ${MOCK_API_ACCOUNTS_URL}
 
     depends_on:
       postgres-ms2:

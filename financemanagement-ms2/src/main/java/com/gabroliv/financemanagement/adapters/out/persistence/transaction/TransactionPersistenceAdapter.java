@@ -1,6 +1,6 @@
 package com.gabroliv.financemanagement.adapters.out.persistence.transaction;
 
-import com.gabroliv.financemanagement.application.port.out.TransactionRepositoryPort;
+import com.gabroliv.financemanagement.application.ports.out.TransactionRepositoryPort;
 import com.gabroliv.financemanagement.domain.model.Transaction;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,6 @@
 package com.gabroliv.financemanagement.adapters.out.persistence.user;
 
-import com.gabroliv.financemanagement.application.port.out.UserRepositoryPort;
+import com.gabroliv.financemanagement.application.ports.out.UserRepositoryPort;
 import com.gabroliv.financemanagement.domain.model.User;
 import org.springframework.stereotype.Component;
 
