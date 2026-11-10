@@ -34,4 +34,4 @@ build/
 
 certs/*
 certs/zscaler-root-ca.crt
-!certs/.gitkeep
+certs/.gitkeep

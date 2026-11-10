@@ -2,6 +2,28 @@ FROM eclipse-temurin:25-jdk AS build
 
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates ca-certificates-java \
+    && update-ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG IMPORT_ZSCALER_CERT=false
+
+COPY certs/ /tmp/custom-certs/
+
+RUN if [ "$IMPORT_ZSCALER_CERT" = "true" ] && [ -f /tmp/custom-certs/zscaler-root-ca.crt ]; then \
+        cp /tmp/custom-certs/zscaler-root-ca.crt /usr/local/share/ca-certificates/zscaler-root-ca.crt; \
+        update-ca-certificates; \
+        keytool -importcert \
+            -noprompt \
+            -trustcacerts \
+            -alias zscaler-root-ca \
+            -file /usr/local/share/ca-certificates/zscaler-root-ca.crt \
+            -keystore /etc/ssl/certs/java/cacerts \
+            -storepass changeit; \
+    fi \
+    && rm -rf /tmp/custom-certs
+
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 
@@ -14,24 +36,6 @@ RUN ./mvnw clean package -DskipTests
 
 
 FROM eclipse-temurin:25-jre
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates ca-certificates-java \
-    && update-ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY certs/zscaler-root-ca.crt /usr/local/share/ca-certificates/zscaler-root-ca.crt
-
-RUN update-ca-certificates \
-    && keytool -importcert \
-        -noprompt \
-        -trustcacerts \
-        -alias zscaler-root-ca \
-        -file /usr/local/share/ca-certificates/zscaler-root-ca.crt \
-        -keystore /etc/ssl/certs/java/cacerts \
-        -storepass changeit
-
-ENV JAVA_TOOL_OPTIONS="-Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
 
 WORKDIR /app
 
