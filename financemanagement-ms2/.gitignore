@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+certs/*
+certs/zscaler-root-ca.crt
+!certs/.gitkeep

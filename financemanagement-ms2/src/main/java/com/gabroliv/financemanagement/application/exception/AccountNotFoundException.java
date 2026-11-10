@@ -1,4 +1,4 @@
-package com.gabroliv.financemanagement.adapters.out.mockapi.exception;
+package com.gabroliv.financemanagement.application.exception;
 
 public class AccountNotFoundException extends RuntimeException {
 

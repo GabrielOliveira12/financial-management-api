@@ -1,4 +1,4 @@
-package com.gabroliv.financemanagement.adapters.out.mockapi.exception;
+package com.gabroliv.financemanagement.application.exception;
 
 public class AccountGatewayException extends RuntimeException {
     public AccountGatewayException(Throwable cause) {

@@ -31,10 +31,16 @@ public class TransactionController {
     public ResponseEntity<TransactionResponse> create(@AuthenticationPrincipal Long authenticatedUserId,
                                                       @Valid @RequestBody TransactionRequest request) {
 
-        Transaction transaction = transactionUseCase.create(authenticatedUserId,
-                new CreateTransactionCommand(request.type(), request.amount(),
-                        request.destinationUserId(), request.occurredAt(),
-                        request.description(), request.category()));
+        Transaction transaction = transactionUseCase.create(
+                authenticatedUserId,
+                new CreateTransactionCommand(
+                        request.type(),
+                        request.amount(),
+                        request.destinationUserId(),
+                        request.category(),
+                        request.description()
+                )
+        );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(transaction));
     }

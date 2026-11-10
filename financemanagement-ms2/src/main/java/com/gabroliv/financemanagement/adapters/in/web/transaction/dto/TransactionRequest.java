@@ -15,7 +15,6 @@ public record TransactionRequest(
         @Positive(message = "Transaction amount must be greater than zero.")
         BigDecimal amount,
         Long destinationUserId,
-        @NotNull(message = "Transaction occurrence date is required.")
-        LocalDateTime occurredAt,
-        String description,
-        TransactionCategory category) { }
+        TransactionCategory category,
+        String description
+) { }

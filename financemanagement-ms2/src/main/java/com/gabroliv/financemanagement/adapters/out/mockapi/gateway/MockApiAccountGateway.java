@@ -1,8 +1,8 @@
 package com.gabroliv.financemanagement.adapters.out.mockapi.gateway;
 
 import com.gabroliv.financemanagement.adapters.out.mockapi.dto.MockApiAccountResponse;
-import com.gabroliv.financemanagement.adapters.out.mockapi.exception.AccountGatewayException;
-import com.gabroliv.financemanagement.adapters.out.mockapi.exception.AccountNotFoundException;
+import com.gabroliv.financemanagement.application.exception.AccountGatewayException;
+import com.gabroliv.financemanagement.application.exception.AccountNotFoundException;
 import com.gabroliv.financemanagement.application.ports.out.AccountGatewayPort;
 import com.gabroliv.financemanagement.application.ports.out.AccountLimits;
 import org.slf4j.Logger;

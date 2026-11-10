@@ -6,10 +6,9 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class FinancemanagementMs2ApplicationTests {
+class FinanceManagementMs2ApplicationTests {
 
 	@Test
 	void contextLoads() {
 	}
-
 }

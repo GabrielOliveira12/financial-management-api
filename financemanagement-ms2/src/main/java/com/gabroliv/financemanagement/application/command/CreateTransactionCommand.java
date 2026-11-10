@@ -7,4 +7,4 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record CreateTransactionCommand(TransactionType type, BigDecimal amount, Long destinationUserId,
-        LocalDateTime occurredAt, String description, TransactionCategory category) { }
+                                       TransactionCategory category, String description) { }

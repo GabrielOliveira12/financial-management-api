@@ -1,8 +1,8 @@
 package com.gabroliv.financemanagement.application.service;
 
-import com.gabroliv.financemanagement.adapters.out.mockapi.exception.AccountGatewayException;
-import com.gabroliv.financemanagement.adapters.out.mockapi.exception.AccountNotFoundException;
 import com.gabroliv.financemanagement.application.command.CreateTransactionCommand;
+import com.gabroliv.financemanagement.application.exception.AccountGatewayException;
+import com.gabroliv.financemanagement.application.exception.AccountNotFoundException;
 import com.gabroliv.financemanagement.application.ports.in.TransactionUseCase;
 import com.gabroliv.financemanagement.application.ports.out.AccountGatewayPort;
 import com.gabroliv.financemanagement.application.ports.out.AccountLimits;
@@ -14,6 +14,7 @@ import com.gabroliv.financemanagement.domain.model.TransactionType;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,18 +24,28 @@ public class TransactionService implements TransactionUseCase {
 
     private final TransactionRepositoryPort transactionRepository;
     private final AccountGatewayPort accountGatewayPort;
+    private final Clock clock;
 
     public TransactionService(
             TransactionRepositoryPort transactionRepository,
-            AccountGatewayPort accountGatewayPort
+            AccountGatewayPort accountGatewayPort,
+            Clock clock
     ) {
         this.transactionRepository = transactionRepository;
         this.accountGatewayPort = accountGatewayPort;
+        this.clock = clock;
     }
 
     @Override
     public Transaction create(Long userId, CreateTransactionCommand command) {
-        Transaction transaction = createApprovedTransaction(userId, command);
+        LocalDateTime occurredAt = LocalDateTime.now(clock);
+        LocalDate transactionDate = occurredAt.toLocalDate();
+
+        Transaction transaction = createApprovedTransaction(
+                userId,
+                command,
+                occurredAt
+        );
 
         if (command.type() == TransactionType.DEPOSIT) {
             return transactionRepository.save(transaction);
@@ -46,7 +57,8 @@ public class TransactionService implements TransactionUseCase {
             RejectionReason rejectionReason = validateFinancialRules(
                     userId,
                     command,
-                    accountLimits
+                    accountLimits,
+                    transactionDate
             );
 
             if (rejectionReason != null) {
@@ -68,7 +80,8 @@ public class TransactionService implements TransactionUseCase {
 
     private Transaction createApprovedTransaction(
             Long userId,
-            CreateTransactionCommand command
+            CreateTransactionCommand command,
+            LocalDateTime occurredAt
     ) {
         return new Transaction(
                 null,
@@ -76,19 +89,20 @@ public class TransactionService implements TransactionUseCase {
                 command.destinationUserId(),
                 command.type(),
                 command.amount(),
-                command.occurredAt(),
+                occurredAt,
                 command.description(),
                 command.category(),
                 TransactionStatus.APPROVED,
                 null,
-                LocalDateTime.now()
+                occurredAt
         );
     }
 
     private RejectionReason validateFinancialRules(
             Long userId,
             CreateTransactionCommand command,
-            AccountLimits accountLimits
+            AccountLimits accountLimits,
+            LocalDate transactionDate
     ) {
         if (command.amount().compareTo(accountLimits.transactionLimit()) > 0) {
             return RejectionReason.TRANSACTION_LIMIT_EXCEEDED;
@@ -100,7 +114,7 @@ public class TransactionService implements TransactionUseCase {
 
         BigDecimal dailyAmount = calculateApprovedDailyAmount(
                 userId,
-                command.occurredAt().toLocalDate()
+                transactionDate
         );
 
         BigDecimal dailyAmountAfterTransaction = dailyAmount.add(command.amount());
