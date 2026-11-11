@@ -5,6 +5,7 @@ import com.gabroliv.financemanagement.domain.model.Transaction;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class TransactionPersistenceAdapter implements TransactionRepositoryPort {
@@ -20,6 +21,11 @@ public class TransactionPersistenceAdapter implements TransactionRepositoryPort 
         TransactionJpaEntity savedEntity = transactionRepository.save(toEntity(transaction));
 
         return toDomain(savedEntity);
+    }
+
+    @Override
+    public Optional<Transaction> findById(Long transactionId) {
+        return transactionRepository.findById(transactionId).map(this::toDomain);
     }
 
     @Override

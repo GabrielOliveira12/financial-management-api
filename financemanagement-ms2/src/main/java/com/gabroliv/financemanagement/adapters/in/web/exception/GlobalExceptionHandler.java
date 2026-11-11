@@ -1,5 +1,7 @@
 package com.gabroliv.financemanagement.adapters.in.web.exception;
 
+import com.gabroliv.financemanagement.domain.exception.TransactionAccessDeniedException;
+import com.gabroliv.financemanagement.domain.exception.TransactionNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -100,5 +102,39 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.badRequest().body(apiError);
+    }
+
+    @ExceptionHandler(TransactionNotFoundException.class)
+    public ResponseEntity<ApiError> handleTransactionNotFoundException(
+            TransactionNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        ApiError apiError = new ApiError(
+                Instant.now(),
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
+    }
+
+    @ExceptionHandler(TransactionAccessDeniedException.class)
+    public ResponseEntity<ApiError> handleTransactionAccessDeniedException(
+            TransactionAccessDeniedException exception,
+            HttpServletRequest request
+    ) {
+        ApiError apiError = new ApiError(
+                Instant.now(),
+                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiError);
     }
 }

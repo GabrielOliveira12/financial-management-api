@@ -7,6 +7,9 @@ import com.gabroliv.financemanagement.application.ports.in.TransactionUseCase;
 import com.gabroliv.financemanagement.application.ports.out.AccountGatewayPort;
 import com.gabroliv.financemanagement.application.ports.out.AccountLimits;
 import com.gabroliv.financemanagement.application.ports.out.TransactionRepositoryPort;
+import com.gabroliv.financemanagement.application.query.TransactionFilters;
+import com.gabroliv.financemanagement.domain.exception.TransactionAccessDeniedException;
+import com.gabroliv.financemanagement.domain.exception.TransactionNotFoundException;
 import com.gabroliv.financemanagement.domain.model.RejectionReason;
 import com.gabroliv.financemanagement.domain.model.Transaction;
 import com.gabroliv.financemanagement.domain.model.TransactionStatus;
@@ -74,8 +77,24 @@ public class TransactionService implements TransactionUseCase {
     }
 
     @Override
-    public List<Transaction> findAllByUserId(Long userId) {
-        return transactionRepository.findAllByUserId(userId);
+    public Transaction findById(Long authenticatedUserId, Long transactionId) {
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new TransactionNotFoundException(transactionId));
+
+        if (!transaction.getUserId().equals(authenticatedUserId)) {
+            throw new TransactionAccessDeniedException();
+        }
+
+        return transaction;
+    }
+
+    @Override
+    public List<Transaction> findAllByUserId(Long authenticatedUserId, TransactionFilters filters) {
+        return transactionRepository.findAllByUserId(authenticatedUserId).stream()
+                .filter(t -> filters.type() == null || t.getType() == filters.type())
+                .filter(t -> filters.startDate() == null || !t.getOccurredAt().toLocalDate().isBefore(filters.startDate()))
+                .filter(t -> filters.endDate() == null || !t.getOccurredAt().toLocalDate().isAfter(filters.endDate()))
+                .toList();
     }
 
     private Transaction createApprovedTransaction(
