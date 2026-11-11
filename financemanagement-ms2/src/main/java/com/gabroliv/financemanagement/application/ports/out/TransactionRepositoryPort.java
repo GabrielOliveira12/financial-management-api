@@ -1,4 +1,4 @@
-package com.gabroliv.financemanagement.application.port.out;
+package com.gabroliv.financemanagement.application.ports.out;
 
 import com.gabroliv.financemanagement.domain.model.Transaction;
 

@@ -5,7 +5,7 @@ import com.gabroliv.financemanagement.adapters.in.web.user.dto.UserRequest;
 import com.gabroliv.financemanagement.adapters.in.web.user.dto.UserResponse;
 import com.gabroliv.financemanagement.application.command.CreateUserCommand;
 import com.gabroliv.financemanagement.application.command.UpdateUserCommand;
-import com.gabroliv.financemanagement.application.port.in.UserUseCase;
+import com.gabroliv.financemanagement.application.ports.in.UserUseCase;
 import com.gabroliv.financemanagement.domain.model.User;
 import com.gabroliv.financemanagement.adapters.in.security.AuthenticatedUserDetails;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

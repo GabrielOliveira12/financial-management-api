@@ -2,8 +2,8 @@ package com.gabroliv.financemanagement.application.service;
 
 import com.gabroliv.financemanagement.application.command.CreateUserCommand;
 import com.gabroliv.financemanagement.application.command.UpdateUserCommand;
-import com.gabroliv.financemanagement.application.port.out.PasswordHashPort;
-import com.gabroliv.financemanagement.application.port.out.UserRepositoryPort;
+import com.gabroliv.financemanagement.application.ports.out.PasswordHashPort;
+import com.gabroliv.financemanagement.application.ports.out.UserRepositoryPort;
 import com.gabroliv.financemanagement.domain.exception.UserAccessDeniedException;
 import com.gabroliv.financemanagement.domain.exception.UserAlreadyExistsException;
 import com.gabroliv.financemanagement.domain.exception.UserNotFoundException;
