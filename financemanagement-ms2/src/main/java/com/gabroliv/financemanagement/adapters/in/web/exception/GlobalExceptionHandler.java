@@ -1,5 +1,7 @@
 package com.gabroliv.financemanagement.adapters.in.web.exception;
 
+import com.gabroliv.financemanagement.application.exception.AccountGatewayException;
+import com.gabroliv.financemanagement.application.exception.AccountNotFoundException;
 import com.gabroliv.financemanagement.domain.exception.TransactionAccessDeniedException;
 import com.gabroliv.financemanagement.domain.exception.TransactionNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -136,5 +138,39 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiError);
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<ApiError> handleAccountNotFoundException(
+            AccountNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        ApiError apiError = new ApiError(
+                Instant.now(),
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
+    }
+
+    @ExceptionHandler(AccountGatewayException.class)
+    public ResponseEntity<ApiError> handleAccountGatewayException(
+            AccountGatewayException exception,
+            HttpServletRequest request
+    ) {
+        ApiError apiError = new ApiError(
+                Instant.now(),
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(apiError);
     }
 }

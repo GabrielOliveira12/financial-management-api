@@ -4,8 +4,9 @@ import com.gabroliv.financemanagement.adapters.in.web.user.dto.CsvImportResponse
 import com.gabroliv.financemanagement.adapters.in.web.user.dto.UserRequest;
 import com.gabroliv.financemanagement.adapters.in.web.user.exception.CsvImportException;
 import com.gabroliv.financemanagement.application.command.CreateUserCommand;
+import com.gabroliv.financemanagement.application.command.UserImportItem;
 import com.gabroliv.financemanagement.application.ports.in.UserUseCase;
-import com.gabroliv.financemanagement.domain.model.User;
+import com.gabroliv.financemanagement.application.result.BulkUserImportResult;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.apache.commons.csv.CSVFormat;
@@ -46,13 +47,19 @@ public class UserCsvImportController {
 
     @PostMapping(value = "/import/csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CsvImportResponse> importCsv(@RequestParam("file") MultipartFile file) {
-        List<CreateUserCommand> commands = parseFile(file);
-        List<User> users = userUseCase.createUsers(commands);
+        ParsedCsv parsedCsv = parseFile(file);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(new CsvImportResponse(users.size()));
+        BulkUserImportResult result = userUseCase.createUsers(parsedCsv.validItems());
+
+        Map<String, String> errors = new LinkedHashMap<>(parsedCsv.fieldErrors());
+        result.errors().forEach(error -> errors.putIfAbsent(error.identifier(), error.reason()));
+
+        CsvImportResponse response = new CsvImportResponse(result.createdUsers().size(), errors.size(), errors);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    private List<CreateUserCommand> parseFile(MultipartFile file) {
+    private ParsedCsv parseFile(MultipartFile file) {
         if (file.isEmpty()) {
             throw new CsvImportException("CSV import failed.", Map.of("file", "CSV file must not be empty."));
         }
@@ -62,28 +69,39 @@ public class UserCsvImportController {
 
             validateHeaders(parser);
 
-            List<CreateUserCommand> commands = new ArrayList<>();
+            List<UserImportItem> validItems = new ArrayList<>();
             Map<String, String> fieldErrors = new LinkedHashMap<>();
+            boolean hasAnyLine = false;
 
             for (CSVRecord record : parser) {
-                validateRecordConsistency(record, fieldErrors);
+                hasAnyLine = true;
+                long lineNumber = record.getRecordNumber() + 1;
+                String identifier = "line " + lineNumber;
+
+                if (!record.isConsistent()) {
+                    fieldErrors.put(identifier, "CSV line has an invalid number of columns.");
+                    continue;
+                }
 
                 UserRequest request = new UserRequest(record.get("name"), record.get("email"), record.get("username"), record.get("password"));
 
-                validateUserRequest(request, record.getRecordNumber() + 1, fieldErrors);
+                List<String> violations = validateUserRequest(request);
+                if (!violations.isEmpty()) {
+                    fieldErrors.put(identifier, String.join(" ", violations));
+                    continue;
+                }
 
-                commands.add(new CreateUserCommand(request.name(), request.email(), request.username(), request.password()));
+                validItems.add(new UserImportItem(
+                        identifier,
+                        new CreateUserCommand(request.name(), request.email(), request.username(), request.password())
+                ));
             }
 
-            if (commands.isEmpty()) {
+            if (!hasAnyLine) {
                 throw new CsvImportException("CSV import failed.", Map.of("file", "CSV file must contain at least one user."));
             }
 
-            if (!fieldErrors.isEmpty()) {
-                throw new CsvImportException("CSV validation failed.", fieldErrors);
-            }
-
-            return commands;
+            return new ParsedCsv(validItems, fieldErrors);
 
         } catch (IOException exception) {
             throw new CsvImportException("CSV import failed.", Map.of("file", "Could not read the CSV file."));
@@ -100,15 +118,13 @@ public class UserCsvImportController {
         }
     }
 
-    private void validateRecordConsistency(CSVRecord record, Map<String, String> fieldErrors) {
-        if (!record.isConsistent()) {
-            fieldErrors.put("line " + (record.getRecordNumber() + 1), "CSV line has an invalid number of columns.");
-        }
-    }
-
-    private void validateUserRequest(UserRequest request, long lineNumber, Map<String, String> fieldErrors) {
+    private List<String> validateUserRequest(UserRequest request) {
         Set<ConstraintViolation<UserRequest>> violations = validator.validate(request);
 
-        violations.forEach(violation -> fieldErrors.putIfAbsent("line " + lineNumber + "." + violation.getPropertyPath(), violation.getMessage()));
+        return violations.stream()
+                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .toList();
     }
+
+    private record ParsedCsv(List<UserImportItem> validItems, Map<String, String> fieldErrors) {}
 }

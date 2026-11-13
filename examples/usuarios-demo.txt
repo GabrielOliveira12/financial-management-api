@@ -1,0 +1,11 @@
+Usuários de demonstração — carregados automaticamente no build via Flyway
+(financemanagement-ms1/src/main/resources/db/migration/V2__seed_demo_users.sql)
+
+Use estas credenciais no POST /auth/login do MS1 (campo "username" aceita username ou email).
+
+name,email,username,password
+Ana Silva,ana.silva@example.com,ana.silva,user1123
+Bruno Costa,bruno.costa@example.com,bruno.costa,user2123
+Carla Souza,carla.souza@example.com,carla.souza,user3123
+Diego Pereira,diego.pereira@example.com,diego.pereira,user4123
+Elisa Martins,elisa.martins@example.com,elisa.martins,user5123

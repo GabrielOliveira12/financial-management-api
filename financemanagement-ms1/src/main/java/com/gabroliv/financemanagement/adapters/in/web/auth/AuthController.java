@@ -4,6 +4,7 @@ import com.gabroliv.financemanagement.adapters.in.security.AuthenticatedUserDeta
 import com.gabroliv.financemanagement.adapters.in.security.JwtService;
 import com.gabroliv.financemanagement.adapters.in.web.auth.dto.LoginRequest;
 import com.gabroliv.financemanagement.adapters.in.web.auth.dto.LoginResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +27,7 @@ public class AuthController {
         this.jwtService = jwtService;
     }
 
+    @Operation(summary = "Authenticate", description = "Authenticates a user using either their username or email, and returns a JWT token.")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(

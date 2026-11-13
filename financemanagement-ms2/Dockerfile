@@ -39,6 +39,11 @@ FROM eclipse-temurin:25-jre
 
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates ca-certificates-java \
+    && update-ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN groupadd --system spring \
     && useradd --system --gid spring --no-create-home spring
 

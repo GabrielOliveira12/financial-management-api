@@ -14,8 +14,10 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class MockApiAccountGateway implements AccountGatewayPort {
@@ -35,6 +37,53 @@ public class MockApiAccountGateway implements AccountGatewayPort {
 
     @Override
     public AccountLimits getAccountLimits(Long userId) {
+        MockApiAccountResponse account = fetchAccount(userId);
+
+        return new AccountLimits(
+                account.userId(),
+                account.balance(),
+                account.dailyLimit(),
+                account.transactionLimit()
+        );
+    }
+
+    @Override
+    public void updateBalance(Long userId, BigDecimal newBalance) {
+        MockApiAccountResponse account = fetchAccount(userId);
+
+        try {
+            URI uri = UriComponentsBuilder
+                    .fromUriString(accountsUrl)
+                    .pathSegment(account.id())
+                    .build()
+                    .toUri();
+
+            log.info("Atualizando saldo na MockAPI. userId: {}, novoSaldo: {}", userId, newBalance);
+
+            restClient.put()
+                    .uri(uri)
+                    .body(Map.of(
+                            "userId", account.userId(),
+                            "balance", newBalance,
+                            "dailyLimit", account.dailyLimit(),
+                            "transactionLimit", account.transactionLimit()
+                    ))
+                    .retrieve()
+                    .toBodilessEntity();
+
+        } catch (RestClientException | IllegalArgumentException exception) {
+            log.error(
+                    "Erro ao atualizar saldo na MockAPI. URL base: {}, userId: {}",
+                    accountsUrl,
+                    userId,
+                    exception
+            );
+
+            throw new AccountGatewayException(exception);
+        }
+    }
+
+    private MockApiAccountResponse fetchAccount(Long userId) {
         try {
             URI uri = UriComponentsBuilder
                     .fromUriString(accountsUrl)
@@ -54,14 +103,7 @@ public class MockApiAccountGateway implements AccountGatewayPort {
                 throw new AccountNotFoundException(userId);
             }
 
-            MockApiAccountResponse account = accounts.getFirst();
-
-            return new AccountLimits(
-                    account.userId(),
-                    account.balance(),
-                    account.dailyLimit(),
-                    account.transactionLimit()
-            );
+            return accounts.getFirst();
         } catch (AccountNotFoundException exception) {
             throw exception;
         } catch (RestClientException | IllegalArgumentException exception) {
@@ -76,3 +118,4 @@ public class MockApiAccountGateway implements AccountGatewayPort {
         }
     }
 }
+
