@@ -256,8 +256,10 @@ Ou seja: hoje o `error.log` captura falhas de infraestrutura/integração e bugs
 
 ### Detalhes de implementação do container
 
-Como os containers rodam com um usuário não-root (`spring`), o `Dockerfile` de cada serviço copia um `entrypoint.sh` que:
-1. Ajusta a permissão da pasta `/app/logs` (necessário porque o volume montado pelo Compose chega com o dono padrão do host, não do usuário `spring`);
-2. Troca para o usuário `spring` via `su`, exportando `PATH=/opt/java/openjdk/bin:$PATH` explicitamente (o `su` dessa imagem não preserva o `PATH` original mesmo com a flag `-p`);
-3. Só então inicia a aplicação (`java -jar app.jar`).
+Como os containers rodam com um usuário não-root (`spring`), o `Dockerfile` de cada serviço gera um script `entrypoint.sh` **diretamente na imagem** (via `RUN echo ... > /app/entrypoint.sh`, não copiado do host) que:
+1. Tenta ajustar a permissão da pasta `/app/logs` (necessário porque o volume montado pelo Compose chega com o dono padrão do host, não do usuário `spring`) — se falhar, ignora e segue;
+2. Se estiver rodando como `root` e o usuário `spring` existir, troca para ele via `su`, exportando `PATH=/opt/java/openjdk/bin:$PATH` explicitamente (o `su` dessa imagem não preserva o `PATH` original mesmo com a flag `-p`);
+3. Em qualquer outro caso (permissão falhou, `spring` não existe), cai no fallback e roda `java -jar app.jar` direto — a aplicação **sempre sobe**, com ou sem a parte de logs em arquivo funcionando perfeitamente.
+
+Gerar o script dentro do Dockerfile (em vez de copiar um `.sh` do repositório) evita um problema real que ocorreu durante o desenvolvimento: o Git no Windows converteu o arquivo para quebra de linha CRLF, o que quebra o shebang (`#!/bin/sh`) no Linux e impede o container de iniciar. Essa causa fica eliminada por completo com a geração inline.
 
