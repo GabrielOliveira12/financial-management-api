@@ -1,5 +1,6 @@
 # Root-level ignores
 .env
+logs/
 
 ### IDE ###
 .idea/

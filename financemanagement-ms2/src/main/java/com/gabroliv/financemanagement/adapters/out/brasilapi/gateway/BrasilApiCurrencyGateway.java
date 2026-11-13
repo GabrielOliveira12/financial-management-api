@@ -40,25 +40,25 @@ public class BrasilApiCurrencyGateway implements CurrencyConversionPort {
                         .retrieve()
                         .body(BrasilApiCotacaoResponse.class);
 
-                if (response == null || response.cotacoes() == null || response.cotacoes().isEmpty()) {
+                if (response == null || response.rates() == null || response.rates().isEmpty()) {
                     continue;
                 }
 
-                List<BrasilApiCotacaoResponse.Cotacao> cotacoes = response.cotacoes();
+                List<BrasilApiCotacaoResponse.Rate> rates = response.rates();
 
-                BrasilApiCotacaoResponse.Cotacao cotacao = cotacoes.stream()
-                        .filter(c -> FECHAMENTO_PTAX.equals(c.tipoBoletim()))
+                BrasilApiCotacaoResponse.Rate rate = rates.stream()
+                        .filter(r -> FECHAMENTO_PTAX.equals(r.bulletinType()))
                         .findFirst()
-                        .orElse(cotacoes.getLast());
+                        .orElse(rates.getLast());
 
-                return Optional.of(new CurrencyRate(currency, cotacao.cotacaoVenda(), targetDate));
+                return Optional.of(new CurrencyRate(currency, rate.sellRate(), targetDate));
 
             } catch (RestClientException exception) {
-                log.debug("BrasilAPI sem cotação para {}/{}, tentando dia anterior.", currency, targetDate);
+                log.debug("BrasilAPI has no rate for {}/{}, trying the previous day.", currency, targetDate);
             }
         }
 
-        log.warn("BrasilAPI sem cotação disponível para {} nos últimos 3 dias úteis a partir de {}.", currency, date);
+        log.warn("BrasilAPI has no rate available for {} in the last 3 business days from {}.", currency, date);
         return Optional.empty();
     }
 }

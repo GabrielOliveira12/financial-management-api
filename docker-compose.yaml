@@ -36,6 +36,9 @@ services:
     ports:
       - "${MS1_APP_PORT}:8080"
 
+    volumes:
+      - ./logs/ms1:/app/logs
+
     environment:
       DB_HOST: postgres-ms1
       DB_PORT: 5432
@@ -86,6 +89,9 @@ services:
 
     ports:
       - "${MS2_APP_PORT}:8080"
+
+    volumes:
+      - ./logs/ms2:/app/logs
 
     environment:
       DB_HOST: postgres-ms2

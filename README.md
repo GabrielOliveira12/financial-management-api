@@ -221,3 +221,43 @@ O relatório HTML mostra a cobertura por pacote e classe. As classes de domínio
 ## Segredos e configuração
 
 Nenhum segredo fica versionado no repositório. Senhas, URLs de serviços externos e chaves JWT vêm exclusivamente de variáveis de ambiente, com o arquivo `.env.example` versionado como referência de quais variáveis existem.
+
+## Logs
+
+Cada microsserviço grava logs em arquivo, além do console, usando Logback (`logback-spring.xml` em `src/main/resources`):
+
+| Arquivo | Nível | Retenção |
+|---|---|---|
+| `debug.log` | DEBUG e acima (tudo) | 7 dias, rotação diária |
+| `error.log` | ERROR e acima (só falhas) | 30 dias, rotação diária |
+
+No Docker Compose, cada serviço monta sua pasta de logs como volume, persistindo no host:
+
+```yaml
+ms1:
+  volumes:
+    - ./logs/ms1:/app/logs
+ms2:
+  volumes:
+    - ./logs/ms2:/app/logs
+```
+
+Os arquivos ficam disponíveis em `logs/ms1/` e `logs/ms2/` na raiz do repositório, mesmo depois de um `docker compose down`.
+
+**O que efetivamente cai no `error.log`:**
+
+| Origem do erro | Vai para `error.log`? |
+|---|---|
+| Exceção de negócio tratada por um `@ExceptionHandler` do `GlobalExceptionHandler` (ex.: validação, transação não encontrada, acesso negado) | **Não.** O handler só converte a exceção numa resposta HTTP (400/403/404/503); não há `log.error` dentro dele. |
+| Exceção sem handler (bug real, `NullPointerException`, erro inesperado) | **Sim.** O Spring Boot/Tomcat captura e loga automaticamente como ERROR, com stack trace completo, antes de responder 500 ao cliente. |
+| Falha de integração registrada explicitamente no código (ex.: `MockApiAccountGateway`, `TransactionService.creditBalance`, `Ms1UserGateway`) | **Sim.** Esses pontos chamam `log.error(...)` manualmente dentro do `catch`. |
+
+Ou seja: hoje o `error.log` captura falhas de infraestrutura/integração e bugs não tratados, mas **não** registra rejeições de negócio esperadas (saldo insuficiente, limite excedido, etc.) — essas aparecem só como resposta HTTP ao cliente, por design.
+
+### Detalhes de implementação do container
+
+Como os containers rodam com um usuário não-root (`spring`), o `Dockerfile` de cada serviço copia um `entrypoint.sh` que:
+1. Ajusta a permissão da pasta `/app/logs` (necessário porque o volume montado pelo Compose chega com o dono padrão do host, não do usuário `spring`);
+2. Troca para o usuário `spring` via `su`, exportando `PATH=/opt/java/openjdk/bin:$PATH` explicitamente (o `su` dessa imagem não preserva o `PATH` original mesmo com a flag `-p`);
+3. Só então inicia a aplicação (`java -jar app.jar`).
+

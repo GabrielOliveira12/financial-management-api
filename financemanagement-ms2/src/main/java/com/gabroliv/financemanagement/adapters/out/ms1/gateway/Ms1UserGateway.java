@@ -34,7 +34,7 @@ public class Ms1UserGateway implements UserGatewayPort {
 
             return Boolean.TRUE.equals(exists);
         } catch (RestClientException exception) {
-            log.error("Erro ao consultar MS1 para verificar usuário {}.", userId, exception);
+            log.error("Error while checking user {} with MS1.", userId, exception);
             return false;
         }
     }

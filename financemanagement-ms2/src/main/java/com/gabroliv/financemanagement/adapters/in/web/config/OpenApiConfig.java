@@ -19,7 +19,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Financial Management API - MS2 Transactions")
-                        .description("API responsável pelo gerenciamento de transações do sistema financeiro.")
+                        .description("API responsible for managing transactions of the financial system.")
                         .version("v1")
                         .license(new License().name("Beca Java - NTT DATA")))
                 .components(

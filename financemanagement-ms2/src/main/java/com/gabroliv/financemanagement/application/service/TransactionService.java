@@ -197,7 +197,7 @@ public class TransactionService implements TransactionUseCase {
             BigDecimal newBalance = accountLimits.balance().add(amount);
             updateBalanceSafely(userId, newBalance);
         } catch (AccountNotFoundException | AccountGatewayException exception) {
-            log.error("Não foi possível creditar o saldo do usuário {} na MockAPI.", userId, exception);
+            log.error("Could not credit balance for user {} on MockAPI.", userId, exception);
         }
     }
 
@@ -205,7 +205,7 @@ public class TransactionService implements TransactionUseCase {
         try {
             accountGatewayPort.updateBalance(userId, newBalance);
         } catch (AccountGatewayException exception) {
-            log.error("Não foi possível atualizar o saldo do usuário {} na MockAPI.", userId, exception);
+            log.error("Could not update balance for user {} on MockAPI.", userId, exception);
         }
     }
 }
