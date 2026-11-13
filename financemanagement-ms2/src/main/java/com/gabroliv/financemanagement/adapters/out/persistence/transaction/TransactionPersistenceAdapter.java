@@ -18,31 +18,38 @@ public class TransactionPersistenceAdapter implements TransactionRepositoryPort 
 
     @Override
     public Transaction save(Transaction transaction) {
-        TransactionJpaEntity savedEntity = transactionRepository.save(toEntity(transaction));
+        TransactionJpaEntity entity = new TransactionJpaEntity(
+                transaction.getId(),
+                transaction.getUserId(),
+                transaction.getDestinationUserId(),
+                transaction.getType(),
+                transaction.getAmount(),
+                transaction.getOccurredAt(),
+                transaction.getDescription(),
+                transaction.getCategory(),
+                transaction.getStatus(),
+                transaction.getRejectionReason(),
+                transaction.getCreatedAt(),
+                transaction.getUsdRate(),
+                transaction.getUsdRateDate(),
+                transaction.getAmountInUsd(),
+                transaction.getEurRate(),
+                transaction.getEurRateDate(),
+                transaction.getAmountInEur()
+        );
 
-        return toDomain(savedEntity);
+        return transactionRepository.save(entity).toDomain();
     }
 
     @Override
     public Optional<Transaction> findById(Long transactionId) {
-        return transactionRepository.findById(transactionId).map(this::toDomain);
+        return transactionRepository.findById(transactionId).map(TransactionJpaEntity::toDomain);
     }
 
     @Override
     public List<Transaction> findAllByUserId(Long userId) {
-        return transactionRepository.findAllByUserIdOrderByOccurredAtDesc(userId).stream().map(this::toDomain).toList();
-    }
-
-    private TransactionJpaEntity toEntity(Transaction transaction) {
-        return new TransactionJpaEntity(transaction.getId(), transaction.getUserId(), transaction.getDestinationUserId(),
-                transaction.getType(), transaction.getAmount(), transaction.getOccurredAt(), transaction.getDescription(),
-                transaction.getCategory(), transaction.getStatus(), transaction.getRejectionReason(),
-                transaction.getCreatedAt());
-    }
-
-    private Transaction toDomain(TransactionJpaEntity entity) {
-        return new Transaction(entity.getId(), entity.getUserId(), entity.getDestinationUserId(), entity.getType(),
-                entity.getAmount(), entity.getOccurredAt(), entity.getDescription(), entity.getCategory(),
-                entity.getStatus(), entity.getRejectionReason(), entity.getCreatedAt());
+        return transactionRepository.findAllByUserIdOrderByOccurredAtDesc(userId).stream()
+                .map(TransactionJpaEntity::toDomain)
+                .toList();
     }
 }

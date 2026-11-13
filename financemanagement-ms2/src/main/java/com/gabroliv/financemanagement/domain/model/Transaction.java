@@ -1,6 +1,7 @@
 package com.gabroliv.financemanagement.domain.model;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Transaction {
@@ -16,10 +17,18 @@ public class Transaction {
     private TransactionStatus status;
     private RejectionReason rejectionReason;
     private final LocalDateTime createdAt;
+    private final BigDecimal usdRate;
+    private final LocalDate usdRateDate;
+    private final BigDecimal amountInUsd;
+    private final BigDecimal eurRate;
+    private final LocalDate eurRateDate;
+    private final BigDecimal amountInEur;
 
     public Transaction(Long id, Long userId, Long destinationUserId, TransactionType type, BigDecimal amount,
                        LocalDateTime occurredAt, String description, TransactionCategory category,
-                       TransactionStatus status, RejectionReason rejectionReason, LocalDateTime createdAt) {
+                       TransactionStatus status, RejectionReason rejectionReason, LocalDateTime createdAt,
+                       BigDecimal usdRate, LocalDate usdRateDate, BigDecimal amountInUsd,
+                       BigDecimal eurRate, LocalDate eurRateDate, BigDecimal amountInEur) {
 
         validateUserId(userId);
         validateAmount(amount);
@@ -27,7 +36,6 @@ public class Transaction {
         validateCategory(type, category);
         validateDestinationUser(userId, type, destinationUserId);
         validateStatus(status, rejectionReason);
-
 
         this.id = id;
         this.userId = userId;
@@ -38,6 +46,12 @@ public class Transaction {
         this.description = description;
         this.category = category;
         this.createdAt = createdAt;
+        this.usdRate = usdRate;
+        this.usdRateDate = usdRateDate;
+        this.amountInUsd = amountInUsd;
+        this.eurRate = eurRate;
+        this.eurRateDate = eurRateDate;
+        this.amountInEur = amountInEur;
 
         if (status == TransactionStatus.APPROVED) {
             approve();
@@ -155,5 +169,29 @@ public class Transaction {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public BigDecimal getUsdRate() {
+        return usdRate;
+    }
+
+    public LocalDate getUsdRateDate() {
+        return usdRateDate;
+    }
+
+    public BigDecimal getAmountInUsd() {
+        return amountInUsd;
+    }
+
+    public BigDecimal getEurRate() {
+        return eurRate;
+    }
+
+    public LocalDate getEurRateDate() {
+        return eurRateDate;
+    }
+
+    public BigDecimal getAmountInEur() {
+        return amountInEur;
     }
 }

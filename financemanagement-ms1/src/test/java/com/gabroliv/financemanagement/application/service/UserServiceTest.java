@@ -2,8 +2,10 @@ package com.gabroliv.financemanagement.application.service;
 
 import com.gabroliv.financemanagement.application.command.CreateUserCommand;
 import com.gabroliv.financemanagement.application.command.UpdateUserCommand;
+import com.gabroliv.financemanagement.application.command.UserImportItem;
 import com.gabroliv.financemanagement.application.ports.out.PasswordHashPort;
 import com.gabroliv.financemanagement.application.ports.out.UserRepositoryPort;
+import com.gabroliv.financemanagement.application.result.BulkUserImportResult;
 import com.gabroliv.financemanagement.domain.exception.UserAccessDeniedException;
 import com.gabroliv.financemanagement.domain.exception.UserAlreadyExistsException;
 import com.gabroliv.financemanagement.domain.exception.UserNotFoundException;
@@ -146,6 +148,47 @@ class UserServiceTest {
         verify(userRepository).existsByEmail("test@example.com");
         verify(userRepository).existsByUsername("testuser");
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void shouldSaveValidUsersAndReportErrorsForInvalidOnesWhenImportingInBulk() {
+        CreateUserCommand validCommand = new CreateUserCommand(
+                "Valid User",
+                "valid@example.com",
+                "validuser",
+                "password123"
+        );
+        CreateUserCommand duplicateCommand = new CreateUserCommand(
+                "Duplicate User",
+                "duplicate@example.com",
+                "duplicateuser",
+                "password123"
+        );
+
+        List<UserImportItem> items = List.of(
+                new UserImportItem("line 2", validCommand),
+                new UserImportItem("line 3", duplicateCommand)
+        );
+
+        when(passwordEncoder.hash(validCommand.password())).thenReturn("$2a$10$validHash");
+        when(userRepository.existsByEmail("valid@example.com")).thenReturn(false);
+        when(userRepository.existsByUsername("validuser")).thenReturn(false);
+        when(userRepository.existsByEmail("duplicate@example.com")).thenReturn(true);
+
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            return new User(1L, user.getName(), user.getEmail(), user.getUsername(), user.getPassword());
+        });
+
+        BulkUserImportResult result = userService.createUsers(items);
+
+        assertEquals(1, result.createdUsers().size());
+        assertEquals("valid@example.com", result.createdUsers().get(0).getEmail());
+
+        assertEquals(1, result.errors().size());
+        assertEquals("line 3", result.errors().get(0).identifier());
+
+        verify(userRepository).save(any(User.class));
     }
 
     @Test

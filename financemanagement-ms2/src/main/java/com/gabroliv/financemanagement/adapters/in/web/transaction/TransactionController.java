@@ -5,6 +5,7 @@ import com.gabroliv.financemanagement.adapters.in.web.transaction.dto.Transactio
 import com.gabroliv.financemanagement.application.command.CreateTransactionCommand;
 import com.gabroliv.financemanagement.application.ports.in.TransactionUseCase;
 import com.gabroliv.financemanagement.application.query.TransactionFilters;
+import com.gabroliv.financemanagement.application.query.TransactionWithConversion;
 import com.gabroliv.financemanagement.domain.model.Transaction;
 import com.gabroliv.financemanagement.domain.model.TransactionType;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -57,8 +58,8 @@ public class TransactionController {
             @AuthenticationPrincipal Long authenticatedUserId,
             @PathVariable Long id) {
 
-        Transaction transaction = transactionUseCase.findById(authenticatedUserId, id);
-        return ResponseEntity.ok(toResponse(transaction));
+        TransactionWithConversion result = transactionUseCase.findById(authenticatedUserId, id);
+        return ResponseEntity.ok(toResponse(result.transaction()));
     }
 
     @GetMapping
@@ -78,19 +79,25 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
-    private TransactionResponse toResponse(Transaction transaction) {
+    private TransactionResponse toResponse(Transaction t) {
         return new TransactionResponse(
-                transaction.getId(),
-                transaction.getUserId(),
-                transaction.getDestinationUserId(),
-                transaction.getType(),
-                transaction.getAmount(),
-                transaction.getOccurredAt(),
-                transaction.getDescription(),
-                transaction.getCategory(),
-                transaction.getStatus(),
-                transaction.getRejectionReason(),
-                transaction.getCreatedAt()
+                t.getId(),
+                t.getUserId(),
+                t.getDestinationUserId(),
+                t.getType(),
+                t.getAmount(),
+                t.getOccurredAt(),
+                t.getDescription(),
+                t.getCategory(),
+                t.getStatus(),
+                t.getRejectionReason(),
+                t.getCreatedAt(),
+                t.getAmountInUsd(),
+                t.getUsdRate(),
+                t.getUsdRateDate(),
+                t.getAmountInEur(),
+                t.getEurRate(),
+                t.getEurRateDate()
         );
     }
 }
