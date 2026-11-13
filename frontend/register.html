@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Financial Management — Cadastro de Usuário</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <style>
+        .bg-register-image {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .bg-register-image .register-icon {
+            color: rgba(255, 255, 255, 0.85);
+        }
+        .bg-register-image .register-icon i {
+            font-size: 6rem;
+        }
+        .bg-register-image .register-icon p {
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-primary">
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-10 col-lg-12 col-md-9">
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col-lg-5 d-none d-lg-block bg-register-image">
+                                <div class="register-icon">
+                                    <i class="fas fa-user-plus"></i>
+                                    <p>Crie sua conta</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-7">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-4">Cadastro de Usuário</h1>
+                                    </div>
+
+                                    <ul class="nav nav-tabs mb-4" id="register-tabs" role="tablist">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" id="tab-single" data-toggle="tab" href="#pane-single" role="tab">
+                                                Cadastro individual
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="tab-csv" data-toggle="tab" href="#pane-csv" role="tab">
+                                                Importar via CSV
+                                            </a>
+                                        </li>
+                                    </ul>
+
+                                    <div class="tab-content">
+
+                                        <div class="tab-pane fade show active" id="pane-single" role="tabpanel">
+                                            <div id="alert-single"></div>
+                                            <form class="user" id="form-single">
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control form-control-user"
+                                                        id="reg-name" placeholder="Nome completo" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <input type="email" class="form-control form-control-user"
+                                                        id="reg-email" placeholder="Email" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control form-control-user"
+                                                        id="reg-username" placeholder="Username" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <input type="password" class="form-control form-control-user"
+                                                        id="reg-password" placeholder="Senha (mínimo 6 caracteres)"
+                                                        minlength="6" required>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary btn-user btn-block">
+                                                    Cadastrar
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <div class="tab-pane fade" id="pane-csv" role="tabpanel">
+                                            <div id="alert-csv"></div>
+                                            <p class="small text-gray-600">
+                                                O arquivo deve ter as colunas: <code>name,email,username,password</code>.
+                                                Linhas inválidas ou duplicadas são reportadas sem impedir a importação das demais.
+                                            </p>
+                                            <form id="form-csv">
+                                                <div class="form-group">
+                                                    <input type="file" class="form-control-file" id="csv-file" accept=".csv" required>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary btn-user btn-block">
+                                                    Importar CSV
+                                                </button>
+                                            </form>
+
+                                            <div id="csv-result" class="mt-3" style="display: none;">
+                                                <h6>Resultado da importação</h6>
+                                                <p>
+                                                    <span class="badge badge-success" id="csv-created-count"></span>
+                                                    usuários criados,
+                                                    <span class="badge badge-danger" id="csv-failed-count"></span>
+                                                    com erro
+                                                </p>
+                                                <table class="table table-sm table-bordered" id="csv-errors-table" style="display: none;">
+                                                    <thead>
+                                                        <tr><th>Linha</th><th>Motivo</th></tr>
+                                                    </thead>
+                                                    <tbody></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <hr>
+                                    <div class="text-center">
+                                        <a class="small" href="login.html">Já tem uma conta? Entrar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <script src="js/sb-admin-2.min.js"></script>
+
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        $(function () {
+            $("#form-single").on("submit", function (event) {
+                event.preventDefault();
+
+                const payload = {
+                    name: $("#reg-name").val().trim(),
+                    email: $("#reg-email").val().trim(),
+                    username: $("#reg-username").val().trim(),
+                    password: $("#reg-password").val()
+                };
+
+                Api.ms1("/users", {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                }).then(function () {
+                    showAlert("alert-single", "Usuário cadastrado com sucesso! Redirecionando para o login...", "success");
+                    setTimeout(function () {
+                        window.location.href = "login.html";
+                    }, 1500);
+                }).catch(function (error) {
+                    showAlert("alert-single", extractErrorMessage(error));
+                });
+            });
+
+            $("#form-csv").on("submit", function (event) {
+                event.preventDefault();
+
+                const fileInput = document.getElementById("csv-file");
+                if (!fileInput.files.length) {
+                    showAlert("alert-csv", "Selecione um arquivo CSV.");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("file", fileInput.files[0]);
+
+                fetch(API_CONFIG.MS1_URL + "/users/import/csv", {
+                    method: "POST",
+                    body: formData
+                }).then(function (response) {
+                    return response.json().then(function (body) {
+                        return { ok: response.ok, body: body };
+                    });
+                }).then(function (result) {
+                    if (!result.ok) {
+                        return Promise.reject(result.body);
+                    }
+
+                    const data = result.body;
+                    $("#csv-created-count").text(data.createdUsers);
+                    $("#csv-failed-count").text(data.failedUsers);
+                    $("#csv-result").show();
+
+                    const errorsTable = $("#csv-errors-table");
+                    const tbody = errorsTable.find("tbody");
+                    tbody.empty();
+
+                    const errors = data.errors || {};
+                    const errorKeys = Object.keys(errors);
+
+                    if (errorKeys.length > 0) {
+                        errorKeys.forEach(function (key) {
+                            tbody.append("<tr><td>" + key + "</td><td>" + errors[key] + "</td></tr>");
+                        });
+                        errorsTable.show();
+                    } else {
+                        errorsTable.hide();
+                    }
+
+                    showAlert("alert-csv", "Importação concluída.", "success");
+                }).catch(function (error) {
+                    showAlert("alert-csv", extractErrorMessage(error));
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>

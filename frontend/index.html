@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Financial Management — Dashboard</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+</head>
+
+<body id="page-top">
+
+    <div id="wrapper">
+
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+                <div class="sidebar-brand-icon rotate-n-15">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="sidebar-brand-text mx-3">FinManagement</div>
+            </a>
+
+            <hr class="sidebar-divider my-0">
+
+            <li class="nav-item active">
+                <a class="nav-link" href="index.html">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span></a>
+            </li>
+
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">Financeiro</div>
+
+            <li class="nav-item">
+                <a class="nav-link" href="transactions.html">
+                    <i class="fas fa-fw fa-exchange-alt"></i>
+                    <span>Transações</span></a>
+            </li>
+
+            <hr class="sidebar-divider d-none d-md-block">
+        </ul>
+
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+                    <ul class="navbar-nav ml-auto">
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="username-display">Usuário</span>
+                                <i class="fas fa-user-circle fa-2x text-gray-300"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="#" id="logout-btn">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Sair
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="container-fluid">
+
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Saldo Atual</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="card-balance">—</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-wallet fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Limite Diário</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="card-daily-limit">—</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                Limite por Transação</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="card-transaction-limit">—</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-receipt fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Gasto no Mês Atual</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="card-total-spent">—</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-xl-8 col-lg-7">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Gasto por Dia (mês atual)</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-area">
+                                        <canvas id="chart-by-day"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Gasto por Categoria</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-pie pt-4 pb-2">
+                                        <canvas id="chart-by-category"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Últimas Transações</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="table-recent-transactions">
+                                            <thead>
+                                                <tr>
+                                                    <th>Data</th>
+                                                    <th>Tipo</th>
+                                                    <th>Categoria</th>
+                                                    <th>Valor</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Financial Management API — BECA Bradesco Java Beginner</span>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <script src="js/sb-admin-2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        $(function () {
+            Auth.requireAuth();
+            $("#username-display").text(Auth.getUsername());
+            $("#logout-btn").on("click", function (e) {
+                e.preventDefault();
+                Auth.logout();
+            });
+
+            Api.ms2("/accounts/balance").then(function (data) {
+                $("#card-balance").text(formatCurrency(data.balance));
+                $("#card-daily-limit").text(formatCurrency(data.dailyLimit));
+                $("#card-transaction-limit").text(formatCurrency(data.transactionLimit));
+            }).catch(function () {
+                $("#card-balance").text("Indisponível");
+            });
+
+            Api.ms2("/expenses/summary").then(function (summary) {
+                $("#card-total-spent").text(formatCurrency(summary.totalSpent));
+                renderByDayChart(summary.byDay);
+                renderByCategoryChart(summary.byCategory);
+            }).catch(function () {
+                $("#card-total-spent").text("Indisponível");
+            });
+
+            Api.ms2("/transactions").then(function (transactions) {
+                const tbody = $("#table-recent-transactions tbody");
+                tbody.empty();
+
+                transactions.slice(0, 10).forEach(function (t) {
+                    tbody.append(
+                        "<tr>" +
+                        "<td>" + formatDate(t.occurredAt) + "</td>" +
+                        "<td>" + t.type + "</td>" +
+                        "<td>" + (t.category || "-") + "</td>" +
+                        "<td>" + formatCurrency(t.amount) + "</td>" +
+                        "<td><span class=\"badge badge-" + (t.status === "APPROVED" ? "success" : "danger") + "\">" + t.status + "</span></td>" +
+                        "</tr>"
+                    );
+                });
+            });
+
+            function renderByDayChart(byDay) {
+                const ctx = document.getElementById("chart-by-day");
+                new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels: byDay.map(function (d) { return d.date; }),
+                        datasets: [{
+                            label: "Gasto (R$)",
+                            backgroundColor: "#4e73df",
+                            data: byDay.map(function (d) { return d.total; })
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            function renderByCategoryChart(byCategory) {
+                const ctx = document.getElementById("chart-by-category");
+                const palette = ["#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b", "#858796", "#5a5c69"];
+                new Chart(ctx, {
+                    type: "doughnut",
+                    data: {
+                        labels: byCategory.map(function (c) { return c.category; }),
+                        datasets: [{
+                            data: byCategory.map(function (c) { return c.total; }),
+                            backgroundColor: palette
+                        }]
+                    },
+                    options: { maintainAspectRatio: false }
+                });
+            }
+        });
+    </script>
+
+</body>
+
+</html>

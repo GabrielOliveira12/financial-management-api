@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Financial Management — Transações</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+</head>
+
+<body id="page-top">
+
+    <div id="wrapper">
+
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+                <div class="sidebar-brand-icon rotate-n-15">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="sidebar-brand-text mx-3">FinManagement</div>
+            </a>
+
+            <hr class="sidebar-divider my-0">
+
+            <li class="nav-item">
+                <a class="nav-link" href="index.html">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span></a>
+            </li>
+
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">Financeiro</div>
+
+            <li class="nav-item active">
+                <a class="nav-link" href="transactions.html">
+                    <i class="fas fa-fw fa-exchange-alt"></i>
+                    <span>Transações</span></a>
+            </li>
+
+            <hr class="sidebar-divider d-none d-md-block">
+        </ul>
+
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+                    <ul class="navbar-nav ml-auto">
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="username-display">Usuário</span>
+                                <i class="fas fa-user-circle fa-2x text-gray-300"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="#" id="logout-btn">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Sair
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="container-fluid">
+
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <h1 class="h3 mb-0 text-gray-800">Transações</h1>
+                        <div>
+                            <a href="#" class="btn btn-sm btn-success shadow-sm" data-toggle="modal" data-target="#newTransactionModal">
+                                <i class="fas fa-plus fa-sm text-white-50"></i> Nova transação
+                            </a>
+                            <a href="#" class="btn btn-sm btn-primary shadow-sm" id="download-report-btn">
+                                <i class="fas fa-download fa-sm text-white-50"></i> Baixar relatório CSV
+                            </a>
+                        </div>
+                    </div>
+
+                    <div id="alert-container"></div>
+
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Filtros</h6>
+                        </div>
+                        <div class="card-body">
+                            <form class="form-inline" id="filter-form">
+                                <label class="mr-2">Tipo</label>
+                                <select class="form-control mr-3" id="filter-type">
+                                    <option value="">Todos</option>
+                                    <option value="DEPOSIT">Depósito</option>
+                                    <option value="WITHDRAWAL">Retirada</option>
+                                    <option value="TRANSFER">Transferência</option>
+                                    <option value="PURCHASE">Compra</option>
+                                </select>
+                                <label class="mr-2">De</label>
+                                <input type="date" class="form-control mr-3" id="filter-start-date">
+                                <label class="mr-2">Até</label>
+                                <input type="date" class="form-control mr-3" id="filter-end-date">
+                                <button type="submit" class="btn btn-primary">Filtrar</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Histórico de Transações</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="table-transactions" width="100%">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Data</th>
+                                            <th>Tipo</th>
+                                            <th>Categoria</th>
+                                            <th>Descrição</th>
+                                            <th>Valor (R$)</th>
+                                            <th>USD</th>
+                                            <th>EUR</th>
+                                            <th>Status</th>
+                                            <th>Motivo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Financial Management API — BECA Bradesco Java Beginner</span>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <div class="modal fade" id="newTransactionModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nova Transação</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="new-transaction-form">
+                    <div class="modal-body">
+                        <div id="modal-alert-container"></div>
+
+                        <div class="form-group">
+                            <label>Tipo</label>
+                            <select class="form-control" id="tx-type" required>
+                                <option value="DEPOSIT">Depósito</option>
+                                <option value="WITHDRAWAL">Retirada</option>
+                                <option value="TRANSFER">Transferência</option>
+                                <option value="PURCHASE">Compra</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Valor (R$)</label>
+                            <input type="number" step="0.01" min="0.01" class="form-control" id="tx-amount" required>
+                        </div>
+
+                        <div class="form-group" id="group-destination" style="display: none;">
+                            <label>ID do usuário de destino</label>
+                            <input type="number" class="form-control" id="tx-destination">
+                        </div>
+
+                        <div class="form-group" id="group-category" style="display: none;">
+                            <label>Categoria</label>
+                            <select class="form-control" id="tx-category">
+                                <option value="FOOD">Alimentação</option>
+                                <option value="TRANSPORT">Transporte</option>
+                                <option value="HEALTH">Saúde</option>
+                                <option value="EDUCATION">Educação</option>
+                                <option value="ENTERTAINMENT">Lazer</option>
+                                <option value="HOUSING">Moradia</option>
+                                <option value="OTHER">Outros</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Descrição</label>
+                            <input type="text" class="form-control" id="tx-description" maxlength="255">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Registrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <script src="js/sb-admin-2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let dataTable;
+
+        $(function () {
+            Auth.requireAuth();
+            $("#username-display").text(Auth.getUsername());
+            $("#logout-btn").on("click", function (e) {
+                e.preventDefault();
+                Auth.logout();
+            });
+
+            dataTable = $("#table-transactions").DataTable({
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json"
+                },
+                order: [[1, "desc"]]
+            });
+
+            loadTransactions();
+
+            $("#tx-type").on("change", function () {
+                const type = $(this).val();
+                $("#group-destination").toggle(type === "TRANSFER");
+                $("#group-category").toggle(type === "PURCHASE");
+            });
+
+            $("#filter-form").on("submit", function (e) {
+                e.preventDefault();
+                loadTransactions();
+            });
+
+            $("#new-transaction-form").on("submit", function (e) {
+                e.preventDefault();
+                submitNewTransaction();
+            });
+
+            $("#download-report-btn").on("click", function (e) {
+                e.preventDefault();
+                downloadReport();
+            });
+        });
+
+        function loadTransactions() {
+            const params = new URLSearchParams();
+            const type = $("#filter-type").val();
+            const startDate = $("#filter-start-date").val();
+            const endDate = $("#filter-end-date").val();
+
+            if (type) params.append("type", type);
+            if (startDate) params.append("startDate", startDate);
+            if (endDate) params.append("endDate", endDate);
+
+            const query = params.toString() ? "?" + params.toString() : "";
+
+            Api.ms2("/transactions" + query).then(function (transactions) {
+                dataTable.clear();
+
+                transactions.forEach(function (t) {
+                    dataTable.row.add([
+                        t.id,
+                        formatDate(t.occurredAt),
+                        t.type,
+                        t.category || "-",
+                        t.description || "-",
+                        formatCurrency(t.amount),
+                        t.amountInUsd ? formatCurrency(t.amountInUsd).replace("R$", "US$") : "-",
+                        t.amountInEur ? formatCurrency(t.amountInEur).replace("R$", "€") : "-",
+                        '<span class="badge badge-' + (t.status === "APPROVED" ? "success" : "danger") + '">' + t.status + '</span>',
+                        t.rejectionReason || "-"
+                    ]);
+                });
+
+                dataTable.draw();
+            }).catch(function (error) {
+                showAlert("alert-container", extractErrorMessage(error));
+            });
+        }
+
+        function submitNewTransaction() {
+            const type = $("#tx-type").val();
+
+            const payload = {
+                type: type,
+                amount: parseFloat($("#tx-amount").val()),
+                destinationUserId: type === "TRANSFER" ? parseInt($("#tx-destination").val(), 10) : null,
+                category: type === "PURCHASE" ? $("#tx-category").val() : null,
+                description: $("#tx-description").val()
+            };
+
+            Api.ms2("/transactions", {
+                method: "POST",
+                body: JSON.stringify(payload)
+            }).then(function () {
+                $("#newTransactionModal").modal("hide");
+                $("#new-transaction-form")[0].reset();
+                loadTransactions();
+            }).catch(function (error) {
+                showAlert("modal-alert-container", extractErrorMessage(error));
+            });
+        }
+
+        function downloadReport() {
+            const token = Auth.getToken();
+            fetch(API_CONFIG.MS2_URL + "/transactions/report", {
+                headers: { "Authorization": "Bearer " + token }
+            }).then(function (response) {
+                return response.blob();
+            }).then(function (blob) {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "relatorio-transacoes.csv";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            });
+        }
+    </script>
+
+</body>
+
+</html>
