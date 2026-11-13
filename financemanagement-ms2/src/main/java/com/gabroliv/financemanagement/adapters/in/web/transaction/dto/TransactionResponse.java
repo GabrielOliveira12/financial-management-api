@@ -6,6 +6,7 @@ import com.gabroliv.financemanagement.domain.model.TransactionStatus;
 import com.gabroliv.financemanagement.domain.model.TransactionType;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record TransactionResponse(
@@ -19,6 +20,11 @@ public record TransactionResponse(
         TransactionCategory category,
         TransactionStatus status,
         RejectionReason rejectionReason,
-        LocalDateTime createdAt
-) {
-}
+        LocalDateTime createdAt,
+        BigDecimal amountInUsd,
+        BigDecimal usdRate,
+        LocalDate usdRateDate,
+        BigDecimal amountInEur,
+        BigDecimal eurRate,
+        LocalDate eurRateDate
+) {}

@@ -2,20 +2,20 @@ package com.gabroliv.financemanagement.application.service;
 
 import com.gabroliv.financemanagement.application.command.CreateUserCommand;
 import com.gabroliv.financemanagement.application.command.UpdateUserCommand;
+import com.gabroliv.financemanagement.application.command.UserImportItem;
 import com.gabroliv.financemanagement.application.ports.in.UserUseCase;
 import com.gabroliv.financemanagement.application.ports.out.PasswordHashPort;
 import com.gabroliv.financemanagement.application.ports.out.UserRepositoryPort;
+import com.gabroliv.financemanagement.application.result.BulkUserImportResult;
 import com.gabroliv.financemanagement.domain.exception.UserAccessDeniedException;
 import com.gabroliv.financemanagement.domain.exception.UserAlreadyExistsException;
 import com.gabroliv.financemanagement.domain.exception.UserNotFoundException;
 import com.gabroliv.financemanagement.domain.model.User;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.Locale;
-
-
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class UserService implements UserUseCase {
@@ -46,12 +46,25 @@ public class UserService implements UserUseCase {
         return userRepository.save(user);
     }
 
-    @Transactional
     @Override
-    public List<User> createUsers(List<CreateUserCommand> commands) {
-        return commands.stream()
-                .map(this::create)
-                .toList();
+    public BulkUserImportResult createUsers(List<UserImportItem> items) {
+        List<User> createdUsers = new ArrayList<>();
+        List<BulkUserImportResult.ImportError> errors = new ArrayList<>();
+
+        for (UserImportItem item : items) {
+            try {
+                createdUsers.add(create(item.command()));
+            } catch (RuntimeException exception) {
+                errors.add(new BulkUserImportResult.ImportError(item.identifier(), exception.getMessage()));
+            }
+        }
+
+        return new BulkUserImportResult(createdUsers, errors);
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return userRepository.existsById(id);
     }
 
     @Override

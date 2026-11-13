@@ -2,9 +2,12 @@ package com.gabroliv.financemanagement.application.service;
 
 import com.gabroliv.financemanagement.application.command.CreateTransactionCommand;
 import com.gabroliv.financemanagement.application.exception.AccountGatewayException;
+import com.gabroliv.financemanagement.application.exception.AccountNotFoundException;
 import com.gabroliv.financemanagement.application.ports.out.AccountGatewayPort;
 import com.gabroliv.financemanagement.application.ports.out.AccountLimits;
+import com.gabroliv.financemanagement.application.ports.out.CurrencyConversionPort;
 import com.gabroliv.financemanagement.application.ports.out.TransactionRepositoryPort;
+import com.gabroliv.financemanagement.application.ports.out.UserGatewayPort;
 import com.gabroliv.financemanagement.domain.model.RejectionReason;
 import com.gabroliv.financemanagement.domain.model.Transaction;
 import com.gabroliv.financemanagement.domain.model.TransactionCategory;
@@ -16,12 +19,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.gabroliv.financemanagement.application.ports.out.CurrencyRate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,6 +54,15 @@ class TransactionServiceTest {
     @Mock
     private AccountGatewayPort accountGatewayPort;
 
+    @Mock
+    private UserGatewayPort userGatewayPort;
+
+    @Mock
+    private CurrencyConversionPort currencyConversionPort;
+
+    @Mock
+    private JdbcTemplate jdbcTemplate;
+
     private TransactionService transactionService;
 
     @BeforeEach
@@ -54,15 +70,27 @@ class TransactionServiceTest {
         transactionService = new TransactionService(
                 transactionRepository,
                 accountGatewayPort,
+                userGatewayPort,
+                currencyConversionPort,
+                jdbcTemplate,
                 FIXED_CLOCK
         );
 
         when(transactionRepository.save(any(Transaction.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+
     }
 
     @Test
-    void shouldApproveDepositWithoutConsultingAccountGateway() {
+    void shouldApproveDepositAndCreditBalanceOnMockApi() {
+        when(accountGatewayPort.getAccountLimits(USER_ID))
+                .thenReturn(new AccountLimits(
+                        USER_ID,
+                        new BigDecimal("500.00"),
+                        new BigDecimal("1000.00"),
+                        new BigDecimal("500.00")
+                ));
+
         CreateTransactionCommand command = new CreateTransactionCommand(
                 TransactionType.DEPOSIT,
                 new BigDecimal("100.00"),
@@ -86,8 +114,159 @@ class TransactionServiceTest {
         );
 
         verify(transactionRepository).save(transaction);
-        verifyNoInteractions(accountGatewayPort);
+        verify(accountGatewayPort).updateBalance(USER_ID, new BigDecimal("600.00"));
         verify(transactionRepository, never()).findAllByUserId(USER_ID);
+    }
+
+    @Test
+    void shouldRejectDepositWhenAuthenticatedUserHasNoAccountInMockApi() {
+        when(accountGatewayPort.getAccountLimits(USER_ID))
+                .thenThrow(new AccountNotFoundException(USER_ID));
+
+        CreateTransactionCommand command = new CreateTransactionCommand(
+                TransactionType.DEPOSIT,
+                new BigDecimal("100.00"),
+                null,
+                null,
+                "Deposit from user without MockAPI account"
+        );
+
+        Transaction transaction = transactionService.create(USER_ID, command);
+
+        assertEquals(TransactionStatus.REJECTED, transaction.getStatus());
+        assertEquals(RejectionReason.ACCOUNT_NOT_FOUND, transaction.getRejectionReason());
+
+        verify(transactionRepository).save(transaction);
+        verify(accountGatewayPort, never()).updateBalance(any(), any());
+    }
+
+    @Test
+    void shouldRejectWithdrawalWhenAuthenticatedUserHasNoAccountInMockApi() {
+        when(accountGatewayPort.getAccountLimits(USER_ID))
+                .thenThrow(new AccountNotFoundException(USER_ID));
+
+        CreateTransactionCommand command = new CreateTransactionCommand(
+                TransactionType.WITHDRAWAL,
+                new BigDecimal("100.00"),
+                null,
+                null,
+                "Withdrawal from user without MockAPI account"
+        );
+
+        Transaction transaction = transactionService.create(USER_ID, command);
+
+        assertEquals(TransactionStatus.REJECTED, transaction.getStatus());
+        assertEquals(RejectionReason.ACCOUNT_NOT_FOUND, transaction.getRejectionReason());
+
+        verify(transactionRepository).save(transaction);
+        verify(accountGatewayPort, never()).updateBalance(any(), any());
+    }
+
+    @Test
+    void shouldRejectTransactionWhenAccountGatewayIsUnavailableForAuthenticatedUser() {
+        when(accountGatewayPort.getAccountLimits(USER_ID))
+                .thenThrow(new AccountGatewayException(new RuntimeException("MockAPI unavailable")));
+
+        CreateTransactionCommand command = new CreateTransactionCommand(
+                TransactionType.DEPOSIT,
+                new BigDecimal("100.00"),
+                null,
+                null,
+                "Deposit while MockAPI is unavailable"
+        );
+
+        Transaction transaction = transactionService.create(USER_ID, command);
+
+        assertEquals(TransactionStatus.REJECTED, transaction.getStatus());
+        assertEquals(RejectionReason.ACCOUNT_SERVICE_UNAVAILABLE, transaction.getRejectionReason());
+
+        verify(transactionRepository).save(transaction);
+    }
+
+    @Test
+    void shouldDebitBalanceWhenPurchaseIsApproved() {
+        when(accountGatewayPort.getAccountLimits(USER_ID))
+                .thenReturn(new AccountLimits(
+                        USER_ID,
+                        new BigDecimal("500.00"),
+                        new BigDecimal("1000.00"),
+                        new BigDecimal("500.00")
+                ));
+
+        CreateTransactionCommand command = new CreateTransactionCommand(
+                TransactionType.PURCHASE,
+                new BigDecimal("150.00"),
+                null,
+                TransactionCategory.FOOD,
+                "Approved purchase"
+        );
+
+        Transaction transaction = transactionService.create(USER_ID, command);
+
+        assertEquals(TransactionStatus.APPROVED, transaction.getStatus());
+
+        verify(accountGatewayPort).updateBalance(USER_ID, new BigDecimal("350.00"));
+        verify(transactionRepository).save(transaction);
+    }
+
+    @Test
+    void shouldDebitSenderAndCreditDestinationWhenTransferIsApproved() {
+        Long destinationUserId = 2L;
+        when(userGatewayPort.existsById(destinationUserId)).thenReturn(true);
+
+        when(accountGatewayPort.getAccountLimits(USER_ID))
+                .thenReturn(new AccountLimits(
+                        USER_ID,
+                        new BigDecimal("500.00"),
+                        new BigDecimal("1000.00"),
+                        new BigDecimal("500.00")
+                ));
+
+        when(accountGatewayPort.getAccountLimits(destinationUserId))
+                .thenReturn(new AccountLimits(
+                        destinationUserId,
+                        new BigDecimal("200.00"),
+                        new BigDecimal("1000.00"),
+                        new BigDecimal("500.00")
+                ));
+
+        CreateTransactionCommand command = new CreateTransactionCommand(
+                TransactionType.TRANSFER,
+                new BigDecimal("150.00"),
+                destinationUserId,
+                null,
+                "Approved transfer"
+        );
+
+        Transaction transaction = transactionService.create(USER_ID, command);
+
+        assertEquals(TransactionStatus.APPROVED, transaction.getStatus());
+
+        verify(accountGatewayPort).updateBalance(USER_ID, new BigDecimal("350.00"));
+        verify(accountGatewayPort).updateBalance(destinationUserId, new BigDecimal("350.00"));
+        verify(transactionRepository).save(transaction);
+    }
+
+    @Test
+    void shouldRejectTransferWhenDestinationUserDoesNotExistInMs1() {
+        Long destinationUserId = 50L;
+        when(userGatewayPort.existsById(destinationUserId)).thenReturn(false);
+
+        CreateTransactionCommand command = new CreateTransactionCommand(
+                TransactionType.TRANSFER,
+                new BigDecimal("150.00"),
+                destinationUserId,
+                null,
+                "Transferência para usuário inexistente"
+        );
+
+        Transaction transaction = transactionService.create(USER_ID, command);
+
+        assertEquals(TransactionStatus.REJECTED, transaction.getStatus());
+        assertEquals(RejectionReason.ACCOUNT_NOT_FOUND, transaction.getRejectionReason());
+
+        verify(transactionRepository).save(transaction);
+        verifyNoInteractions(accountGatewayPort);
     }
 
     @Test
@@ -120,7 +299,6 @@ class TransactionServiceTest {
         verify(transactionRepository).save(transaction);
         verify(transactionRepository, never()).findAllByUserId(USER_ID);
     }
-
 
     @Test
     void shouldRejectPurchaseWhenTransactionLimitIsExceeded() {
@@ -166,7 +344,8 @@ class TransactionServiceTest {
                 TransactionCategory.FOOD,
                 TransactionStatus.APPROVED,
                 null,
-                LocalDateTime.of(2026, 11, 10, 9, 0)
+                LocalDateTime.of(2026, 11, 10, 9, 0),
+                null, null, null, null, null, null
         );
 
         when(accountGatewayPort.getAccountLimits(USER_ID))

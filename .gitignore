@@ -1,6 +1,9 @@
 # Root-level ignores
 .env
 
+### Frontend ###
+frontend/
+
 ### IDE ###
 .idea/
 .vscode/

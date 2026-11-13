@@ -58,6 +58,11 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/{id}/exists")
+    public ResponseEntity<Boolean> existsById(@PathVariable Long id) {
+        return ResponseEntity.ok(userUseCase.existsById(id));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> findById(@AuthenticationPrincipal AuthenticatedUserDetails authenticatedUser, @PathVariable Long id) {
         return ResponseEntity.ok(toResponse(userUseCase.findById(authenticatedUser.getId(), id)));
