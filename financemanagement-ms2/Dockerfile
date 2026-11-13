@@ -48,9 +48,10 @@ RUN groupadd --system spring \
     && useradd --system --gid spring --no-create-home spring
 
 COPY --from=build --chown=spring:spring /app/target/*.jar app.jar
+COPY entrypoint.sh /app/entrypoint.sh
 
-USER spring
+RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["/app/entrypoint.sh"]

@@ -85,7 +85,7 @@ public class TransactionReportController {
 
             return out.toByteArray();
         } catch (IOException exception) {
-            throw new UncheckedIOException("Erro ao gerar relatório CSV.", exception);
+            throw new UncheckedIOException("Error generating CSV report.", exception);
         }
     }
 }

@@ -58,7 +58,7 @@ public class MockApiAccountGateway implements AccountGatewayPort {
                     .build()
                     .toUri();
 
-            log.info("Atualizando saldo na MockAPI. userId: {}, novoSaldo: {}", userId, newBalance);
+            log.info("Updating balance on MockAPI. userId: {}, newBalance: {}", userId, newBalance);
 
             restClient.put()
                     .uri(uri)
@@ -73,7 +73,7 @@ public class MockApiAccountGateway implements AccountGatewayPort {
 
         } catch (RestClientException | IllegalArgumentException exception) {
             log.error(
-                    "Erro ao atualizar saldo na MockAPI. URL base: {}, userId: {}",
+                    "Error updating balance on MockAPI. Base URL: {}, userId: {}",
                     accountsUrl,
                     userId,
                     exception
@@ -91,7 +91,7 @@ public class MockApiAccountGateway implements AccountGatewayPort {
                     .build()
                     .toUri();
 
-            log.info("Consultando MockAPI: {}", uri);
+            log.info("Querying MockAPI: {}", uri);
 
             List<MockApiAccountResponse> accounts = restClient.get()
                     .uri(uri)
@@ -108,7 +108,7 @@ public class MockApiAccountGateway implements AccountGatewayPort {
             throw exception;
         } catch (RestClientException | IllegalArgumentException exception) {
             log.error(
-                    "Erro ao consultar a MockAPI. URL base: {}, userId: {}",
+                    "Error querying MockAPI. Base URL: {}, userId: {}",
                     accountsUrl,
                     userId,
                     exception
